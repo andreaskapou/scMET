@@ -1,0 +1,13 @@
+bibentry(
+    bibtype = "article",
+    author = c(
+        person(c("Chantriolnt", "Andreas"), "Kapourani"),
+        person(c("Guido"), "Sanguinetti")),
+    title="Melissa: Bayesian clustering and imputation of single cell methylomes",
+    journal="Genome Biology",
+    year="2019",
+    volume="20",
+    issue="1",
+    pages="61",
+    doi = "10.1186/s13059-019-1665-8"
+)
