@@ -1,14 +1,11 @@
 #' @title Create design matrix
 #'
 #' @description Generic function for crating a radial basis function (RBF)
-#'   design matrix for input vector X. If `linear_trend = TRUE` a polynomial
-#'   design matrix is created with two columns (1, X).
+#'   design matrix for input vector X.
 #'
 #' @param L Total number of basis functions, including the bias term.
 #' @param X Vector of covariates
 #' @param c Scaling parameter for variance of RBFs
-#' @param linear_trend Logical, whether the design matrix should be created to
-#'   fit a linear model on the data.
 #'
 #' @return A design matrix object H.
 #'
@@ -17,13 +14,8 @@
 #'
 #' @author C.A.Kapourani \email{C.A.Kapourani@@ed.ac.uk}
 #' @export
-create_design_matrix <- function(L, X, c = 1.2, linear_trend = FALSE) {
-  if (linear_trend) {
-    if (L != 2) { stop("For linear trend fitting, you should set L = 2.")}
-    H <- .poly_design_matrix(L = L, X = X)
-  } else {
-    H <- .rbf_design_matrix(L = L, X = X, c = c)
-  }
+create_design_matrix <- function(L, X, c = 1.2) {
+  H <- .rbf_design_matrix(L = L, X = X, c = c)
   return(H)
 }
 

@@ -23,9 +23,6 @@
 #' @param s_gamma Standard deviation of dispersion parameter `gamma`.
 #' @param rbf_c Scale parameter for empirically computing the variance of the
 #'   RBFs.
-#' @param fit_linear_trend Logical, whether we should fit a linear model for the
-#'   mean-overdispersion trend. If set to `TRUE`, then we set automatically
-#'   \code{L = 2}.
 #' @param cells_range Range (betwen 0 and 1) to randomly (sub)sample the number
 #'   of cells per feature.
 #' @param cpgs_range Range (betwen 0 and 1) to randomly (sub)sample the number
@@ -47,9 +44,8 @@
 scmet_simulate <- function(N_feat = 100, N_cells = 50, N_cpgs = 15, L = 4,
                            X = NULL, w_mu = c(-0.5, -1.5), s_mu = 1,
                            w_gamma = NULL, s_gamma = 0.3, rbf_c = 1,
-                           fit_linear_trend = FALSE, cells_range = c(0.4, 0.8),
-                           cpgs_range = c(0.4, 0.8), seed = NULL,
-                           call_from_sim_diff = FALSE) {
+                           cells_range = c(0.4, 0.8), cpgs_range = c(0.4, 0.8),
+                           seed = NULL, call_from_sim_diff = FALSE) {
   # So RMD check does not complain
   Feature <- NULL
   # If we haven't provided any seed, set only randomly
@@ -61,15 +57,8 @@ scmet_simulate <- function(N_feat = 100, N_cells = 50, N_cpgs = 15, L = 4,
   # Parameter checks
   if (is.null(L)) { L = 4 }
   if (is.null(X) & is.null(w_mu)) { w_mu = c(-0.5, -1.5)}
-
-  # If we want a linear fit, set L = 2.
-  if (fit_linear_trend) {
-    message("Linear trend for mean-overdispersion relationship. Setting L=2\n")
-    L <- 2
-  }
   # Initialize w_gamma
-  w_gamma <- .init_w_gamma(w_gamma = w_gamma, L = L,
-                           fit_linear_trend = fit_linear_trend)
+  w_gamma <- .init_w_gamma(w_gamma = w_gamma, L = L)
 
   # Generate total number of CpGs per feature and cell
   cpgs_list <- .generate_cpgs(N_feat = N_feat, N_cells = N_cells,
@@ -82,8 +71,7 @@ scmet_simulate <- function(N_feat = 100, N_cells = 50, N_cpgs = 15, L = 4,
   X <- tmp$X
   # Generate overdispersion parameters \gamma
   gamma <- .generate_overdisp(N_feat = N_feat, L = L, mu = mu,
-                              w_gamma = w_gamma, s_gamma = s_gamma,
-                              fit_linear_trend = fit_linear_trend, rbf_c = rbf_c)
+                              w_gamma = w_gamma, s_gamma = s_gamma, rbf_c = rbf_c)
 
   # Generate number of methylated CpGs from Beta Binomial
   met_cpgs_list <- lapply(X = 1:N_feat, function(n)
@@ -106,8 +94,8 @@ scmet_simulate <- function(N_feat = 100, N_cells = 50, N_cpgs = 15, L = 4,
   theta_priors <- list(w_mu = w_mu, w_gamma = w_gamma, s_mu = s_mu,
                        s_gamma = s_gamma)
   opts <- list(N_feat = N_feat, N_cells = N_cells, N_cpgs = N_cpgs, L = L,
-               fit_linear_trend = fit_linear_trend, rbf_c = rbf_c,
-               cells_range = cells_range, cpgs_range = cpgs_range, seed = seed)
+               rbf_c = rbf_c, cells_range = cells_range,
+               cpgs_range = cpgs_range, seed = seed)
   obj <- structure(list(Y = Y, X = X, theta_true = theta,
                         theta_priors_true = theta_priors, opts = opts),
                    class = "scmet_simulate")
@@ -145,10 +133,9 @@ scmet_simulate <- function(N_feat = 100, N_cells = 50, N_cpgs = 15, L = 4,
 scmet_simulate_diff <- function(N_feat = 100, N_cells = 50, N_cpgs = 15, L = 4,
                                 diff_feat_prcg_mu = 0,
                                 diff_feat_prcg_gamma = 0.2,
-                                OR_change_mu = 5, OR_change_gamma = 5,
+                                OR_change_mu = 3, OR_change_gamma = 3,
                                 X = NULL, w_mu = c(-.5, -1.5), s_mu = 1,
                                 w_gamma = NULL, s_gamma = 0.3, rbf_c = 1,
-                                fit_linear_trend = FALSE,
                                 cells_range = c(0.4, 0.8),
                                 cpgs_range = c(0.4, 0.8), seed = NULL) {
 
@@ -164,22 +151,14 @@ scmet_simulate_diff <- function(N_feat = 100, N_cells = 50, N_cpgs = 15, L = 4,
   assertthat::assert_that(OR_change_mu > 0 )
   assertthat::assert_that(OR_change_gamma > 0)
 
-  # If we want a linear fit, set L = 2.
-  if (fit_linear_trend) {
-    message("Linear trend for mean-overdispersion relationship. Setting L=2\n")
-    L <- 2
-  }
-
   # Initialize w_gamma
-  w_gamma <- .init_w_gamma(w_gamma = w_gamma, L = L,
-                           fit_linear_trend = fit_linear_trend)
+  w_gamma <- .init_w_gamma(w_gamma = w_gamma, L = L)
 
   # Generate data from group A
   cat("Simulating from group A\n")
   sim_dt_A <- scmet_simulate(N_feat = N_feat, N_cells = N_cells, N_cpgs = N_cpgs,
                              L = L, X = X, w_mu = w_mu, s_mu = s_mu,
                              w_gamma = w_gamma, s_gamma = s_gamma, rbf_c = rbf_c,
-                             fit_linear_trend = fit_linear_trend,
                              cells_range = cells_range, cpgs_range = cpgs_range,
                              call_from_sim_diff = TRUE)
 
@@ -367,11 +346,9 @@ scmet_simulate_diff <- function(N_feat = 100, N_cells = 50, N_cpgs = 15, L = 4,
 }
 
 # Internal function to generate dispersion parameter \gamma.
-.generate_overdisp <- function(N_feat, L, mu, w_gamma, s_gamma,
-                               fit_linear_trend, rbf_c) {
+.generate_overdisp <- function(N_feat, L, mu, w_gamma, s_gamma, rbf_c) {
   # Create design matrix
-  H <- create_design_matrix(L = L, X = mu, c = rbf_c,
-                            linear_trend = fit_linear_trend)
+  H <- create_design_matrix(L = L, X = mu, c = rbf_c)
   # Generate dispersion parameters gamma
   if (NCOL(H) != length(w_gamma)) {
     stop("Number of basis functions should match w_gamma length!")
@@ -411,24 +388,17 @@ scmet_simulate_diff <- function(N_feat = 100, N_cells = 50, N_cpgs = 15, L = 4,
 }
 
 # Initialize w_gamma parameter, depending on other input parameters
-.init_w_gamma <- function(w_gamma = NULL, L = 4, fit_linear_trend = FALSE) {
+.init_w_gamma <- function(w_gamma = NULL, L = 4) {
   # Randomly initialize w_gamma parameter
   if (is.null(w_gamma)) {
-    if (fit_linear_trend) {
-      w_gamma <- c(0.3, -2)
-    } else if (L == 4) {
+    if (L == 4) {
       w_gamma <- c(-1.2, -.3, 1.1, -.9)
     } else {
       w_gamma <- stats::rnorm(L, mean = 0, sd = 1)
     }
   } else {
-    # For linear fit: w_gamma should have two parameters (intercept and slope)
-    if (fit_linear_trend & length(w_gamma) != L) {
-      w_gamma <- c(0.3, -2)
-    } else {
-      if (length(w_gamma) != L) {
-        stop("Number of basis functions L should match `w_gamma` length!")
-      }
+    if (length(w_gamma) != L) {
+      stop("Number of basis functions L should match `w_gamma` length!")
     }
   }
   return(w_gamma)

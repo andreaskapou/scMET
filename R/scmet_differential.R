@@ -74,10 +74,12 @@
 #'   \code{diff_epsilon_summary}: Same as above, but for differential
 #'   variability based on residual overdispersion. } \item{
 #'   \code{diff_gamma_summary}: The same as above but for DV analysis based on
-#'   overdispersion.} \item{ \code{diff_mu_thresh}: Information about optimal posterior evidence threshold search for mean methylation mu. }
-#'   \item{\code{diff_epsilon_thresh}: Same as above but for residual overdispersion epsilon..}
-#'   \item{\code{diff_gamma_thresh}: Same as above but for overdispersion gamma.}
-#'   \item{\code{opts}: The parameters used for testing. For reproducibility purposes.} }
+#'   overdispersion.} \item{ \code{diff_mu_thresh}: Information about optimal
+#'   posterior evidence threshold search for mean methylation mu. }
+#'   \item{\code{diff_epsilon_thresh}: Same as above but for residual
+#'   overdispersion epsilon..} \item{\code{diff_gamma_thresh}: Same as above but
+#'   for overdispersion gamma.} \item{\code{opts}: The parameters used for
+#'   testing. For reproducibility purposes.} }
 #'
 #' @seealso \code{\link{scmet}}, \code{\link{scmet_hvf_lvf}}
 #'

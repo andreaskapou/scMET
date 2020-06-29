@@ -270,8 +270,7 @@ scmet_plot_mean_var <- function(obj, y = "gamma", task = NULL, show_fit = TRUE,
     # Show RBF fit
     if (show_fit) {
       xs <- seq(min(df$mu), max(df$mu), length.out = 200)
-      hs <- create_design_matrix(L = obj$opts$L, X = xs, c = obj$opts$rbf_c,
-                                 linear_trend = obj$opts$fit_linear_trend)
+      hs <- create_design_matrix(L = obj$opts$L, X = xs, c = obj$opts$rbf_c)
       ys <- stats::plogis(c(hs %*% matrixStats::colMedians(obj$posterior$w_gamma)))
       if (y == "epsilon") {
         gg <- gg +

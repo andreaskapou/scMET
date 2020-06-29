@@ -15,7 +15,6 @@ scmet_simulate(
   w_gamma = NULL,
   s_gamma = 0.3,
   rbf_c = 1,
-  fit_linear_trend = FALSE,
   cells_range = c(0.4, 0.8),
   cpgs_range = c(0.4, 0.8),
   seed = NULL,
@@ -50,10 +49,6 @@ the value of L. If NULL, random coefficients will be generated.}
 
 \item{rbf_c}{Scale parameter for empirically computing the variance of the
 RBFs.}
-
-\item{fit_linear_trend}{Logical, whether we should fit a linear model for the
-mean-overdispersion trend. If set to \code{TRUE}, then we set automatically
-\code{L = 2}.}
 
 \item{cells_range}{Range (betwen 0 and 1) to randomly (sub)sample the number
 of cells per feature.}

@@ -17,7 +17,6 @@ scmet(
   algorithm = "meanfield",
   output_samples = 2000,
   chains = 4,
-  fit_linear_trend = FALSE,
   m_wmu = rep(0, NCOL(X)),
   s_wmu = 2,
   s_mu = 1.5,
@@ -63,9 +62,6 @@ are: "NUTS", "HMC". If VB: Possible values are: "meanfield" and "fullrank".}
 draw and save.}
 
 \item{chains}{Total number of chains.}
-
-\item{fit_linear_trend}{Logical, whether we should fit a linear model for the
-mean-overdispersion trend. If set to \code{TRUE}, then we set automatically \code{L = 2}.}
 
 \item{m_wmu}{Prior mean of regression coefficients for covariates X.}
 

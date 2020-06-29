@@ -30,9 +30,6 @@
 #' @param output_samples If VB algorithm, the number of posterior samples to
 #'   draw and save.
 #' @param chains Total number of chains.
-#' @param fit_linear_trend Logical, whether we should fit a linear model for the
-#'   mean-overdispersion trend. If set to `TRUE`, then we set automatically `L =
-#'   2`.
 #' @param m_wmu Prior mean of regression coefficients for covariates X.
 #' @param s_wmu Prior standard deviation of regression coefficients for
 #'   covariates X.
@@ -78,9 +75,9 @@
 #' @export
 scmet <- function(Y, X = NULL, L = 4, use_mcmc = FALSE, use_eb = TRUE,
                   iter = 5000, algorithm = "meanfield", output_samples = 2000,
-                  chains = 4, fit_linear_trend = FALSE, m_wmu = rep(0,NCOL(X)),
-                  s_wmu = 2, s_mu = 1.5, m_wgamma = rep(0, L), s_wgamma = 2,
-                  a_sgamma = 2, b_sgamma = 3, rbf_c = 1, init_using_eb = TRUE,
+                  chains = 4, m_wmu = rep(0,NCOL(X)), s_wmu = 2, s_mu = 1.5,
+                  m_wgamma = rep(0, L), s_wgamma = 2, a_sgamma = 2,
+                  b_sgamma = 3, rbf_c = 1, init_using_eb = TRUE,
                   tol_rel_obj = 1e-4, n_cores = 2, lambda = 4,
                   seed = sample.int(.Machine$integer.max, 1), ...) {
   # So RMD check does not complain
@@ -116,18 +113,11 @@ scmet <- function(Y, X = NULL, L = 4, use_mcmc = FALSE, use_eb = TRUE,
   #-------------------
   # Tests for correct parameter setting for mean-overdispersion trend
   #-------------------
-  # If we use linear trend for mean-overdispersion relationship: set L = 2.
-  if (fit_linear_trend) {
-    message("Linear trend for mean-overdispersion relationship. Setting L=2\n")
-    L <- 2
-    if (length(m_wgamma) != L) { m_wgamma <- rep(0, L) }
-  } else {
-    # Avoid issue with Stan considering 1-dim vector as vector and not real
-    if (L == 1) { m_wgamma <- as.array(m_wgamma) }
-    if (length(m_wgamma) != L) {
-      stop("Number of RBFs should match length of `m_wgamma` parameter.")
-    }
+  if (length(m_wgamma) != L) {
+    stop("Number of RBFs should match length of `m_wgamma` parameter.")
   }
+  # Avoid issue with Stan considering 1-dim vector as vector and not real
+  if (L == 1) { m_wgamma <- as.array(m_wgamma) }
 
   ## Order by Feature and cell id, so we can the segment function inside stan.
   cat("Sorting features.\n")
@@ -186,8 +176,7 @@ scmet <- function(Y, X = NULL, L = 4, use_mcmc = FALSE, use_eb = TRUE,
     # TODO: For efficiency, should use the H matrix as fixed input for posterior
     # inference. Current implementation creates this matrix per each iteration,
     # which makes tha algorithm rather slow.
-    H <- create_design_matrix(L = L, X = bb_mle_fit$mu, c = rbf_c,
-                              linear_trend = fit_linear_trend)
+    H <- create_design_matrix(L = L, X = bb_mle_fit$mu, c = rbf_c)
     m_wgamma <- .lm_mle_penalized(y = stats::qlogis(bb_mle_fit$gamma),
                                   H = H, lambda = lambda)
     if (L == 1) { m_wgamma <- as.array(m_wgamma) }
@@ -210,13 +199,11 @@ scmet <- function(Y, X = NULL, L = 4, use_mcmc = FALSE, use_eb = TRUE,
   # To pass RMD check
   N = J = N_X = y = n = C <- NULL
   # Create data object for Stan
-  linear_trend_tmp <- ifelse(fit_linear_trend, 1, 0)
   dt <- within(list(), {
     N <- NROW(Y)
     J <- length(N_cells)
     N_X <- NCOL(X)
     L <- L
-    fit_linear_trend <- linear_trend_tmp
     y <- Y[, met_reads]
     n <- Y[, total_reads]
     C <- N_cells
@@ -289,9 +276,8 @@ scmet <- function(Y, X = NULL, L = 4, use_mcmc = FALSE, use_eb = TRUE,
                        a_sgamma = a_sgamma, b_sgamma = b_sgamma)
   opts <- list(L = L, use_mcmc = use_mcmc, use_eb = use_eb,
                algorithm = algorithm, iter = iter, chains = chains,
-               fit_linear_trend = fit_linear_trend, rbf_c = rbf_c,
-               tol_rel_obj = tol_rel_obj, output_samples = output_samples,
-               seed = seed)
+               rbf_c = rbf_c, tol_rel_obj = tol_rel_obj,
+               output_samples = output_samples, seed = seed)
   obj <- structure(list(posterior = posterior, Y = Y, X = X,
                         feature_names = unique(Y$Feature),
                         theta_priors = theta_priors, opts = opts),

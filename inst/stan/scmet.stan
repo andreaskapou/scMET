@@ -13,8 +13,6 @@
 //       2. If we do not include any basis function g(), by setting L = 1, then we do not capture the
 //          mean-overdispersion trend, however we still capture the effect of covariates on the mean.
 //       3. If we do not include any of the above, it reduces to a simple BB model without regression.
-//       4. If we set fit_linear_mean_overdisp_trend = 1, then will correct for the mean-overdispersion
-//          trend using a linear model. This would require that we set by default L = 2.
 //
 functions{
   matrix rbf_H(int L, vector X, real c) {
@@ -70,7 +68,6 @@ data {
 	int<lower=0> n[N];      // total number of trials (long form)
 	int<lower=0> y[N];      // number of successes (long form)
 	int<lower=0> C[J];      // # of cells with obserations in each feature
-	int fit_linear_trend;    // Use linear trend for mean-overdispersion relationship?
 	real<lower=0> rbf_c;    // Scaling parameter for spatial variance of RBFs.
 	matrix[J, N_X] X;       // Covariates for each feature J
 	vector[N_X] m_wmu;      // Normal mean vector prior on w_\mu
@@ -98,12 +95,8 @@ transformed parameters {
   vector<lower=1e-15, upper=(1-1e-15)>[J] gamma = inv_logit(logit_gamma);
   vector<lower=-40, upper=40>[J] f_mu = X * w_mu;
   vector<lower=-40, upper=40>[J] f_gamma;
-	// If using linear trend for mean-overdispersion relationship
-	if (fit_linear_trend) {
-    f_gamma = poly_H(L, mu) * w_gamma;
-  } else { // otherwise, use non-linear regression
-    f_gamma = rbf_H(L, mu, rbf_c) * w_gamma;
-  }
+	// Non-linear regression  for mean-overdispersion relationship
+	f_gamma = rbf_H(L, mu, rbf_c) * w_gamma;
 }
 
 // Joint distribution for Beta Binomial model

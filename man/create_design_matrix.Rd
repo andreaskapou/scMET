@@ -4,7 +4,7 @@
 \alias{create_design_matrix}
 \title{Create design matrix}
 \usage{
-create_design_matrix(L, X, c = 1.2, linear_trend = FALSE)
+create_design_matrix(L, X, c = 1.2)
 }
 \arguments{
 \item{L}{Total number of basis functions, including the bias term.}
@@ -12,17 +12,13 @@ create_design_matrix(L, X, c = 1.2, linear_trend = FALSE)
 \item{X}{Vector of covariates}
 
 \item{c}{Scaling parameter for variance of RBFs}
-
-\item{linear_trend}{Logical, whether the design matrix should be created to
-fit a linear model on the data.}
 }
 \value{
 A design matrix object H.
 }
 \description{
 Generic function for crating a radial basis function (RBF)
-design matrix for input vector X. If \code{linear_trend = TRUE} a polynomial
-design matrix is created with two columns (1, X).
+design matrix for input vector X.
 }
 \seealso{
 \code{\link{scmet}}, \code{\link{scmet_differential}},

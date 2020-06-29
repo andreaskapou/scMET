@@ -11,15 +11,14 @@ scmet_simulate_diff(
   L = 4,
   diff_feat_prcg_mu = 0,
   diff_feat_prcg_gamma = 0.2,
-  OR_change_mu = 5,
-  OR_change_gamma = 5,
+  OR_change_mu = 3,
+  OR_change_gamma = 3,
   X = NULL,
   w_mu = c(-0.5, -1.5),
   s_mu = 1,
   w_gamma = NULL,
   s_gamma = 0.3,
   rbf_c = 1,
-  fit_linear_trend = FALSE,
   cells_range = c(0.4, 0.8),
   cpgs_range = c(0.4, 0.8),
   seed = NULL
@@ -65,10 +64,6 @@ the value of L. If NULL, random coefficients will be generated.}
 
 \item{rbf_c}{Scale parameter for empirically computing the variance of the
 RBFs.}
-
-\item{fit_linear_trend}{Logical, whether we should fit a linear model for the
-mean-overdispersion trend. If set to \code{TRUE}, then we set automatically
-\code{L = 2}.}
 
 \item{cells_range}{Range (betwen 0 and 1) to randomly (sub)sample the number
 of cells per feature.}
