@@ -1,0 +1,35 @@
+context("Simulating synthetic data")
+
+test_that("Simulate single population works", {
+  dt <- scmet_simulate(N_feat = 100, N_cells = 50, seed = 123)
+  expect_equal(NROW(dt$X), 100)
+  expect_equal(NCOL(dt$Y), 4)
+  expect_equal(dt$Y$total_reads[c(1, 6)], c(11, 7))
+  expect_gt(dt$X[1, 2], 0.04)
+  expect_lt(dt$X[1, 2], 0.042)
+  expect_gt(dt$theta_true[1, 1], 0.265)
+  expect_lt(dt$theta_true[1, 1], 0.266)
+  expect_gt(dt$theta_true[1, 2], 0.297)
+  expect_lt(dt$theta_true[1, 2], 0.299)
+
+  expect_error(scmet_simulate(N_feat = 100, X = 10))
+  expect_error(scmet_simulate(N_feat = 100, L = 7, w_gamma = c(0.1, 0.2)))
+})
+
+test_that("Simulate differential population works", {
+  dt <- scmet_simulate_diff(N_feat = 100, N_cells = 50, seed = 123)
+  expect_equal(NROW(dt$scmet_dt_B$X), 100)
+  expect_equal(NCOL(dt$scmet_dt_B$Y), 4)
+  expect_equal(dt$scmet_dt_B$Y$total_reads[c(1, 6)], c(10, 11))
+  expect_gt(dt$scmet_dt_A$X[1, 2], 0.04)
+  expect_lt(dt$scmet_dt_A$X[1, 2], 0.042)
+  expect_gt(dt$scmet_dt_B$theta_true[1, 1], 0.265)
+  expect_lt(dt$scmet_dt_B$theta_true[1, 1], 0.266)
+  expect_gt(dt$scmet_dt_B$theta_true[1, 2], 0.297)
+  expect_lt(dt$scmet_dt_B$theta_true[1, 2], 0.299)
+
+  expect_error(scmet_simulate_diff(N_feat = 100, diff_feat_prcg_mu = 1.5))
+  expect_error(scmet_simulate_diff(N_feat = 100, L = 7, w_gamma = c(0.1, 0.2)))
+  expect_error(scmet_simulate_diff(N_feat = 100, OR_change_mu = -1))
+  expect_error(scmet_simulate_diff(N_feat = 100, OR_change_gamma = -1))
+})
