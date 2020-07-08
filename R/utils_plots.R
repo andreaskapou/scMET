@@ -77,7 +77,7 @@ scmet_plot_efdr_efnr_grid <- function(obj, task = "hvf") {
     evi_thresh_grid <- obj[[task]]$evidence_thresh_grid
     efdr_grid <- obj[[task]]$efdr_grid
     efnr_grid <- obj[[task]]$efnr_grid
-    efdr <- obj[[task]]$efdr
+    target_efdr <- obj[[task]]$target_efdr
     evi_thresh <- obj[[task]]$evidence_thresh
     title <- toupper(task)
   } else {
@@ -96,17 +96,18 @@ scmet_plot_efdr_efnr_grid <- function(obj, task = "hvf") {
     evi_thresh_grid <- obj[[mode]]$evidence_thresh_grid
     efdr_grid <- obj[[mode]]$efdr_grid
     efnr_grid <- obj[[mode]]$efnr_grid
-    efdr <- obj[[mode]]$efdr
+    target_efdr <- obj[[mode]]$target_efdr
     evi_thresh <- obj[[mode]]$evidence_thresh
   }
-  ggplot() +
+  gg <- ggplot() +
     geom_line(aes(evi_thresh_grid, efdr_grid, color = "EFDR")) +
     geom_line(aes(evi_thresh_grid, efnr_grid, color = "EFNR")) +
-    geom_hline(aes(color = "Target EFDR", yintercept = efdr)) +
+    geom_hline(aes(color = "Target EFDR", yintercept = target_efdr)) +
     geom_vline(aes(color = "Threshold", xintercept = evi_thresh)) +
     labs(x = "Posterior evidence threshold", y = "Error rate", title = title) +
     ylim(c(0,1)) + theme_bw() +
     .scatter_theme(legend_pos = "right")
+  return(gg)
 }
 
 
@@ -124,6 +125,8 @@ scmet_plot_efdr_efnr_grid <- function(obj, task = "hvf") {
 #'   `epsilon` or `gamma`.
 #' @param task The task for identifying variable, either "hvf" or "lvf".
 #' @param title Optional title, default NULL.
+#' @param nfeatures Optional parameter, denoting a subset of number of features
+#'   to plot (only for non HVF/LVF features). Mostly to reduce over-plotting.
 #'
 #' @return A ggplot2 object.
 #'
@@ -142,7 +145,8 @@ scmet_plot_efdr_efnr_grid <- function(obj, task = "hvf") {
 #'
 #' @export
 #'
-scmet_plot_vf_tail_prob <- function(obj, x = "mu", task = "hvf", title = NULL){
+scmet_plot_vf_tail_prob <- function(obj, x = "mu", task = "hvf", title = NULL,
+                                    nfeatures = NULL){
   if (!(methods::is(obj, "scmet_mcmc") ||
         methods::is(obj, "scmet_vb")) ) {
     stop("Object is not generated from scMET.")
@@ -166,21 +170,38 @@ scmet_plot_vf_tail_prob <- function(obj, x = "mu", task = "hvf", title = NULL){
   }
 
   up_task <- toupper(task)
-  size <- c(2, 0.7)
+  size <- c(1.6, 0.5)
   names(size) <- c(up_task, "Other")
-  fill <- c("red", "gray70")
+  fill <- c("red", "gray80")
   names(fill) <- c(up_task, "Other")
+  alpha <- c(0.6, 0.3)
+  names(alpha) <- c(task, "Other")
 
-  ggplot(obj[[tolower(task)]]$summary, aes_string(x = x, y = "tail_prob")) +
+  df <- obj[[tolower(task)]]$summary
+  # Subset number of features
+  if (!is.null(nfeatures)) {
+    assertthat::assert_that(nfeatures > 0)
+    # Features that are non HVF/LVF
+    tmp <- df[df$is_variable == FALSE, ]
+    if (NROW(tmp) > nfeatures) {
+      tmp <- tmp[sample(NROW(tmp), nfeatures), ]
+      df <- rbind(df[df$is_variable == TRUE, ], tmp)
+    }
+  }
+
+  gg <- ggplot(df,aes_string(x = x, y = "tail_prob")) +
     geom_point(aes(fill = ifelse(is_variable, up_task, "Other"),
-                   size = ifelse(is_variable, up_task, "Other")),
-               colour = "black", shape = 21, stroke = 0.1) +
+                   size = ifelse(is_variable, up_task, "Other"),
+                   alpha = ifelse(is_variable, up_task, "Other")),
+               colour = "black", shape = 21, stroke = 0.03) +
     scale_fill_manual(values = fill) +
     scale_size_manual(values = size) +
+    scale_alpha_manual(values = alpha) +
     geom_hline(yintercept = obj[[tolower(task)]]$evidence_thresh[1], lty = 2,
                col = "black") +
     labs(x = xlab, y = ylab, title = title) + theme_classic() +
     .scatter_theme(legend_pos = "right")
+  return(gg)
 }
 
 
@@ -292,11 +313,11 @@ scmet_plot_mean_var <- function(obj, y = "gamma", task = NULL, show_fit = TRUE,
     }
 
     task <- toupper(task)
-    size <- c(2, 0.8)
+    size <- c(1.6, 0.5)
     names(size) <- c(task, "Other")
     fill <- c("red", "gray80")
     names(fill) <- c(task, "Other")
-    alpha <- c(0.9, 0.7)
+    alpha <- c(0.6, 0.3)
     names(alpha) <- c(task, "Other")
 
     df <- obj[[tolower(task)]]$summary
@@ -304,24 +325,25 @@ scmet_plot_mean_var <- function(obj, y = "gamma", task = NULL, show_fit = TRUE,
     if (!is.null(nfeatures)) {
       assertthat::assert_that(nfeatures > 0)
       # Features that are non HVF/LVF
-      tmp <- df[is_variable == FALSE]
+      tmp <- df[df$is_variable == FALSE, ]
       if (NROW(tmp) > nfeatures) {
         tmp <- tmp[sample(NROW(tmp), nfeatures), ]
-        df <- rbind(df[is_variable == TRUE], tmp)
+        df <- rbind(df[df$is_variable == TRUE, ], tmp)
       }
     }
 
-    ggplot(obj[[tolower(task)]]$summary, aes_string(x = "mu", y = y)) +
+    gg <- ggplot(df, aes_string(x = "mu", y = y)) +
       geom_point(aes(fill = ifelse(is_variable, task, "Other"),
                      size = ifelse(is_variable, task, "Other"),
                      alpha = ifelse(is_variable, task, "Other")),
-                 colour = "black", shape = 21, stroke = 0.1) +
+                 colour = "black", shape = 21, stroke = 0.03) +
       scale_fill_manual(values = fill) +
       scale_size_manual(values = size) +
       scale_alpha_manual(values = alpha) +
       labs(x = xlab, y = ylab, title = title) + theme_classic() +
       .scatter_theme(legend_pos = "right")
   }
+  return(gg)
 }
 
 
@@ -486,6 +508,9 @@ scmet_plot_estimated_vs_true <- function(obj, sim_dt, param = "mu",
 #' @param xlab Optional x-axis label.
 #' @param ylab Optional y-axis label.
 #' @param title Optional title, default NULL.
+#' @param nfeatures Optional parameter, denoting a subset of number of features
+#'   to plot (only for non-differential features). Mostly to reduce
+#'   over-plotting.
 #'
 #' @return A ggplot2 object.
 #'
@@ -512,7 +537,7 @@ scmet_plot_estimated_vs_true <- function(obj, sim_dt, param = "mu",
 #'
 scmet_plot_volcano <- function(diff_obj, task = "diff_epsilon", xlab = NULL,
                                ylab = "Posterior tail probability",
-                               title = NULL) {
+                               title = NULL, nfeatures = NULL) {
   if (!(methods::is(diff_obj, "scmet_differential") )) {
     stop("Object is not generated from scMET differential function.")
   }
@@ -562,15 +587,26 @@ scmet_plot_volcano <- function(diff_obj, task = "diff_epsilon", xlab = NULL,
   idx <- which(!sum_obj[[test]] %in% diff_names)
   sum_obj[[test]][idx] <- "NoDiff"
 
-  size <- c(1.5, 1.5, 0.8)
+  size <- c(1.4, 1.4, 0.65)
   names(size) <- c(diff_names, "NoDiff")
-  alpha <- c(0.83, 0.83, 0.6)
+  alpha <- c(0.55, 0.55, 0.3)
   names(alpha) <- c(diff_names, "NoDiff")
+
+  # Subset number of features
+  if (!is.null(nfeatures)) {
+    assertthat::assert_that(nfeatures > 0)
+    # Features that are non HVF/LVF
+    tmp <- sum_obj[sum_obj[[test]] == "NoDiff", ]
+    if (NROW(tmp) > nfeatures) {
+      tmp <- tmp[sample(NROW(tmp), nfeatures), ]
+      sum_obj <- rbind(sum_obj[sum_obj[[test]] != "NoDiff", ], tmp)
+    }
+  }
 
   # Create ggplot
   gg <- ggplot(data = sum_obj, aes_string(x = x, y = y)) +
     geom_point(aes_string(fill = test, size = test, alpha = test),
-               shape = 21, stroke = 0.06) +
+               shape = 21, stroke = 0.02) +
     scale_size_manual(name = "Hits", values = size) +
     scale_alpha_manual(name = "Hits", values = alpha) +
     scale_fill_manual(name = "Hits",
@@ -578,7 +614,7 @@ scmet_plot_volcano <- function(diff_obj, task = "diff_epsilon", xlab = NULL,
     geom_vline(xintercept = c(-psi, psi), color = "dodgerblue4",
                linetype = "dashed", alpha = 0.8) +
     geom_hline(yintercept = thresh_obj$evidence_thresh, color = "orange",
-               linetype = "dashed", alpha = 0.6) +
+               linetype = "dashed", alpha = 0.8) +
     labs(x = xlab, y = ylab, title = title) + theme_classic() +
     .scatter_theme(legend_pos = "right")
   return(gg)
@@ -606,6 +642,9 @@ scmet_plot_volcano <- function(diff_obj, task = "diff_epsilon", xlab = NULL,
 #' @param xlab Optional x-axis label.
 #' @param ylab Optional y-axis label.
 #' @param title Optional title, default NULL.
+#' @param nfeatures Optional parameter, denoting a subset of number of features
+#'   to plot (only for non-differential features). Mostly to reduce
+#'   over-plotting.
 #'
 #' @return A ggplot2 object.
 #'
@@ -631,7 +670,8 @@ scmet_plot_volcano <- function(diff_obj, task = "diff_epsilon", xlab = NULL,
 #' @export
 #'
 scmet_plot_ma <- function(diff_obj, task = "diff_epsilon", x = "mu",
-                          xlab = NULL, ylab = NULL, title = NULL) {
+                          xlab = NULL, ylab = NULL, title = NULL,
+                          nfeatures = NULL) {
   if (!(methods::is(diff_obj, "scmet_differential") )) {
     stop("Object is not generated from scMET differential function.")
   }
@@ -706,15 +746,26 @@ scmet_plot_ma <- function(diff_obj, task = "diff_epsilon", x = "mu",
   idx <- which(!sum_obj[[test]] %in% diff_names)
   sum_obj[[test]][idx] <- "NoDiff"
 
-  size <- c(1.5, 1.5, 0.8)
+  size <- c(1.4, 1.4, 0.65)
   names(size) <- c(diff_names, "NoDiff")
-  alpha <- c(0.83, 0.83, 0.6)
+  alpha <- c(0.55, 0.55, 0.3)
   names(alpha) <- c(diff_names, "NoDiff")
+
+  # Subset number of features
+  if (!is.null(nfeatures)) {
+    assertthat::assert_that(nfeatures > 0)
+    # Features that are non HVF/LVF
+    tmp <- sum_obj[sum_obj[[test]] == "NoDiff", ]
+    if (NROW(tmp) > nfeatures) {
+      tmp <- tmp[sample(NROW(tmp), nfeatures), ]
+      sum_obj <- rbind(sum_obj[sum_obj[[test]] != "NoDiff", ], tmp)
+    }
+  }
 
   # Create ggplot
   gg <- ggplot(data = sum_obj, aes_string(x = x_param, y = y)) +
     geom_point(aes_string(fill = test, size = test, alpha = test),
-               shape = 21, stroke = 0.06) +
+               shape = 21, stroke = 0.02) +
     scale_size_manual(name = "Hits", values = size) +
     scale_alpha_manual(name = "Hits", values = alpha) +
     scale_fill_manual(name = "Hits",

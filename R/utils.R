@@ -216,77 +216,6 @@ create_design_matrix <- function(L, X, c = 1.2) {
   return(res_diff)
 }
 
-
-# Create confusion matrix. Used only for assessing simulated data where ground
-# truth information is present.
-# TODO: Rewrite this function!
-.confusion_matrix <- function(dt, diff_analysis, N_cells, N_feat, b = 1) {
-  fp = fn = tp = tn <- matrix(0, ncol = 3, nrow = length(N_cells))
-  colnames(fp) = colnames(fn) = colnames(tn) = colnames(tp) <- c("mu", "gamma", "epsilon")
-  rownames(fp) = rownames(fn) = rownames(tn) = rownames(tp) <- paste0("Cells", N_cells)
-  for (i in 1:length(N_cells)) {
-    if (is.numeric(dt[[i]]$sim_dt$diff_var_features)) {
-      diff_var_feat <- 0
-    } else {
-      diff_var_feat <- dt[[i]]$sim_dt$diff_var_features$feature_idx
-    }
-    if (is.numeric(dt[[i]]$sim_dt$diff_mean_features) ) {
-      diff_mean_feat <- 0
-    } else {
-      diff_mean_feat <- dt[[i]]$sim_dt$diff_mean_features$feature_idx
-    }
-
-    hits <- list(which(diff_analysis[[i]]$mean_summary$mean_diff_test %in%
-                         c( paste0(diff_analysis[[i]]$opts$group_label_B, "+"),
-                            paste0(diff_analysis[[i]]$opts$group_label_A, "+") )),
-              which(diff_analysis[[i]]$disp_summary$disp_diff_test %in%
-                      c( paste0(diff_analysis[[i]]$opts$group_label_B, "+"),
-                         paste0(diff_analysis[[i]]$opts$group_label_A, "+") ) ),
-              which(diff_analysis[[i]]$res_disp_summary$res_disp_diff_test %in%
-                      c( paste0(diff_analysis[[i]]$opts$group_label_B, "+"),
-                         paste0(diff_analysis[[i]]$opts$group_label_A, "+") ) ))
-    tp[i, ] <- c( sum(diff_mean_feat %in% hits[[1]]),
-                  sum(diff_var_feat %in% hits[[2]]),
-                  sum(diff_var_feat %in% hits[[3]]) )
-    fp[i, ] <- c( sum(setdiff(seq(1, N_feat), diff_mean_feat) %in% hits[[1]]),
-                  sum(setdiff(seq(1, N_feat), diff_var_feat) %in% hits[[2]]),
-                  sum(setdiff(seq(1, N_feat), diff_var_feat) %in% hits[[3]]) )
-
-    tn[i, ] <- c( sum(setdiff(seq(1, N_feat), diff_mean_feat) %in%
-                        setdiff(seq(1, N_feat), hits[[1]])),
-                  sum(setdiff(seq(1, N_feat), diff_var_feat) %in%
-                        setdiff(seq(1, N_feat), hits[[2]])),
-                  sum(setdiff(seq(1, N_feat), diff_var_feat) %in%
-                        setdiff(seq(1, N_feat), hits[[3]])) )
-
-    fn[i, ] <- c( sum(diff_mean_feat %in% setdiff(seq(1, N_feat), hits[[1]])),
-                  sum(diff_var_feat %in% setdiff(seq(1, N_feat), hits[[2]])),
-                  sum(diff_var_feat %in% setdiff(seq(1, N_feat), hits[[3]])) )
-  }
-
-  # FPR: # of incorrect predicted positives divided by
-  #       total number of negatives (1 - specificity)
-  fpr <- fp / (fp + tn)
-  # FNR: # of incorrect predicted negatives divided by
-  #       total number of positives (1 - recall)
-  fnr <- fn / (fn + tp)
-  # FDR: # of incorrect predicted positives divided by
-  #       total number of discoveries
-  fdr <- fp / (fp + tp)
-  precision <- tp / (tp + fp)
-  recall <- tp / (tp + fn) # True positive rate or sensitivity
-  specificity <- tn / (tn + fp)
-  f1_measure <- 2 * ((precision * recall) / (precision + recall))
-  fb_measure <- (1 + b^2) * ((precision * recall) / ((b^2*precision) + recall))
-
-  obj <- list(fpr = fpr, fnr = fnr, fdr = fdr, tpr = recall,
-              sensitivity = recall, precision = precision, recall = recall,
-              specificity = specificity, f1_measure = f1_measure,
-              fb_measure = fb_measure)
-  return(obj)
-}
-
-
 # Odds Ratio function
 .compute_odds_ratio <- function(p1, p2) {
   return((p1/(1 - p1) ) / (p2 / (1 - p2)))
@@ -296,3 +225,16 @@ create_design_matrix <- function(L, X, c = 1.2) {
 .compute_log_odds_ratio <- function(p1, p2) {
   return(log(.compute_odds_ratio(p1, p2)))
 }
+
+
+# Check if values in a vector are considered as outliers and
+# set specifix min and max thresholds.
+.fix_outliers <- function(x, xmin = 1e-02, xmax = 1 - 1e-2) {
+  assertthat::assert_that(is.vector(x))
+  idx <- which(x < xmin)
+  if (length(idx) > 0) { x[idx] <- xmin }
+  idx <- which(x > xmax)
+  if (length(idx) > 0) { x[idx] <- xmax }
+  return(x)
+}
+
