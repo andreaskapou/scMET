@@ -139,7 +139,8 @@ scmet_hvf <- function(scmet_obj, delta_e = 0.9, delta_g = NULL,
                         efnr = optimal_evidence_thresh[3],
                         efdr_grid = tmp$efdr_grid,
                         efnr_grid = tmp$efnr_grid,
-                        evidence_thresh_grid = tmp$evidence_thresh_grid)
+                        evidence_thresh_grid = tmp$evidence_thresh_grid,
+                        target_efdr = efdr)
 
   return(scmet_obj)
 }
@@ -234,6 +235,7 @@ scmet_lvf <- function(scmet_obj, delta_e = 0.1, delta_g = NULL,
                         efnr = optimal_evidence_thresh[3],
                         efdr_grid = tmp$efdr_grid,
                         efnr_grid = tmp$efnr_grid,
-                        evidence_thresh_grid = tmp$evidence_thresh_grid)
+                        evidence_thresh_grid = tmp$evidence_thresh_grid,
+                        target_efdr = efdr)
   return(scmet_obj)
 }

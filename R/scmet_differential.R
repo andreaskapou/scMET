@@ -205,19 +205,25 @@ scmet_differential <- function(obj_A, obj_B, psi_m = log(1.5), psi_e = log(1.5),
   factor_levels <- c(paste0(group_label_A, "+"), paste0(group_label_B, "+"),
                      "NoDiff", "ExcludedByUser", "ExcludedFromTesting")
 
-  # Extract posterior median for mean methylation
+  # Extract posterior median for mean methylation, check for outliers
   mu_A <- matrixStats::colMedians(obj_A$posterior$mu)
   mu_B <- matrixStats::colMedians(obj_B$posterior$mu)
+  mu_A <- .fix_outliers(x = mu_A, xmin = 1e-02, xmax = 1 - 1e-2)
+  mu_B <- .fix_outliers(x = mu_B, xmin = 1e-02, xmax = 1 - 1e-2)
   mu_overall <- (mu_A * c_A + mu_B * c_B) / c
 
-  # Extract posterior median for biological over-dispersion
+  # Extract posterior median for biological over-dispersion, check for outliers
   gamma_A <- matrixStats::colMedians(obj_A$posterior$gamma)
   gamma_B <- matrixStats::colMedians(obj_B$posterior$gamma)
+  gamma_A <- .fix_outliers(x = gamma_A, xmin = 1e-02, xmax = 1 - 1e-2)
+  gamma_B <- .fix_outliers(x = gamma_B, xmin = 1e-02, xmax = 1 - 1e-2)
   gamma_overall <- (gamma_A + gamma_B) / 2
 
-  # Extract posterior median for residual over-dispersion
+  # Extract posterior median for residual over-dispersion, check for outliers
   epsilon_A <- matrixStats::colMedians(obj_A$posterior$epsilon)
   epsilon_B <- matrixStats::colMedians(obj_B$posterior$epsilon)
+  epsilon_A <- .fix_outliers(x = epsilon_A, xmin = -7, xmax = 7)
+  epsilon_B <- .fix_outliers(x = epsilon_B, xmin = -7, xmax = 7)
   epsilon_overall <- (epsilon_A + epsilon_B) / 2
 
   ##----------------
@@ -231,6 +237,7 @@ scmet_differential <- function(obj_A, obj_B, psi_m = log(1.5), psi_e = log(1.5),
   prob_m <- .tail_prob(chain = chain_lor_m, tolerance_thresh = psi_m)
   # Compute posterior median of LORs
   median_lor_m <- matrixStats::colMedians(chain_lor_m)
+  median_lor_m <- .fix_outliers(x = median_lor_m, xmin = -7, xmax = 7)
 
   # Remove features from DM/DV testing that are considered as outliers,
   # due to the logit link issue at the edge cases near 0 or 1.
@@ -277,6 +284,7 @@ scmet_differential <- function(obj_A, obj_B, psi_m = log(1.5), psi_e = log(1.5),
   prob_g <- .tail_prob(chain = chain_lor_g, tolerance_thresh = psi_g)
   # Compute posterior median of LORs
   median_lor_g <- matrixStats::colMedians(chain_lor_g)
+  median_lor_g <- .fix_outliers(x = median_lor_g, xmin = -7, xmax = 7)
 
   # Remove features from DM/DV testing that are considered as outliers
   features_selected_gamma <- features_selected
@@ -329,6 +337,7 @@ scmet_differential <- function(obj_A, obj_B, psi_m = log(1.5), psi_e = log(1.5),
   prob_e <- .tail_prob(chain = chain_lor_e, tolerance_thresh = psi_e)
   # Compute posterior median of LORs
   median_lor_e <- matrixStats::colMedians(chain_lor_e)
+  median_lor_e <- .fix_outliers(x = median_lor_e, xmin = -7, xmax = 7)
 
   # Search optimal evidence threshold to identify changes in epsilon
   epsilon_thresh <- .thresh_search(evidence_thresh = evidence_thresh_e,
@@ -433,19 +442,22 @@ scmet_differential <- function(obj_A, obj_B, psi_m = log(1.5), psi_e = log(1.5),
                           efnr = opt_evidence_thresh_m[3],
                           efdr_grid = mu_thresh$efdr_grid,
                           efnr_grid = mu_thresh$efnr_grid,
-                          evidence_thresh_grid = mu_thresh$evidence_thresh_grid),
+                          evidence_thresh_grid = mu_thresh$evidence_thresh_grid,
+                          target_efdr = efdr_m),
     diff_epsilon_thresh = list(evidence_thresh = opt_evidence_thresh_e[1],
                                efdr = opt_evidence_thresh_e[2],
                                efnr = opt_evidence_thresh_e[3],
                                efdr_grid = epsilon_thresh$efdr_grid,
                                efnr_grid = epsilon_thresh$efnr_grid,
-                               evidence_thresh_grid = epsilon_thresh$evidence_thresh_grid),
+                               evidence_thresh_grid = epsilon_thresh$evidence_thresh_grid,
+                               target_efdr = efdr_e),
     diff_gamma_thresh = list(evidence_thresh = opt_evidence_thresh_g[1],
                             efdr = opt_evidence_thresh_g[2],
                             efnr = opt_evidence_thresh_g[3],
                             efdr_grid = gamma_thresh$efdr_grid,
                             efnr_grid = gamma_thresh$efnr_grid,
-                            evidence_thresh_grid = gamma_thresh$evidence_thresh_grid),
+                            evidence_thresh_grid = gamma_thresh$evidence_thresh_grid,
+                            target_efdr = efdr_g),
     opts = list(psi_m = psi_m,
                 psi_g = psi_g,
                 psi_e = psi_e,
