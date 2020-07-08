@@ -9,7 +9,8 @@ scmet_plot_volcano(
   task = "diff_epsilon",
   xlab = NULL,
   ylab = "Posterior tail probability",
-  title = NULL
+  title = NULL,
+  nfeatures = NULL
 )
 }
 \arguments{
@@ -27,6 +28,10 @@ x-axis.}
 \item{ylab}{Optional y-axis label.}
 
 \item{title}{Optional title, default NULL.}
+
+\item{nfeatures}{Optional parameter, denoting a subset of number of features
+to plot (only for non-differential features). Mostly to reduce
+over-plotting.}
 }
 \value{
 A ggplot2 object.

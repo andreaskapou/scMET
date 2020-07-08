@@ -4,7 +4,13 @@
 \alias{scmet_plot_vf_tail_prob}
 \title{Plot tail probabilities for variable feature analysis}
 \usage{
-scmet_plot_vf_tail_prob(obj, x = "mu", task = "hvf", title = NULL)
+scmet_plot_vf_tail_prob(
+  obj,
+  x = "mu",
+  task = "hvf",
+  title = NULL,
+  nfeatures = NULL
+)
 }
 \arguments{
 \item{obj}{The scMET object after calling the \code{\link{scmet_hvf_lvf}}
@@ -16,6 +22,9 @@ function.}
 \item{task}{The task for identifying variable, either "hvf" or "lvf".}
 
 \item{title}{Optional title, default NULL.}
+
+\item{nfeatures}{Optional parameter, denoting a subset of number of features
+to plot (only for non HVF/LVF features). Mostly to reduce over-plotting.}
 }
 \value{
 A ggplot2 object.

@@ -10,7 +10,8 @@ scmet_plot_ma(
   x = "mu",
   xlab = NULL,
   ylab = NULL,
-  title = NULL
+  title = NULL,
+  nfeatures = NULL
 )
 }
 \arguments{
@@ -33,6 +34,10 @@ or \code{gamma}. When \code{task = mu}, x can be only \code{mu}.}
 \item{ylab}{Optional y-axis label.}
 
 \item{title}{Optional title, default NULL.}
+
+\item{nfeatures}{Optional parameter, denoting a subset of number of features
+to plot (only for non-differential features). Mostly to reduce
+over-plotting.}
 }
 \value{
 A ggplot2 object.

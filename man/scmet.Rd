@@ -39,7 +39,10 @@ and cell, in a long format \code{\link{data.table}}. That is it should have
 4 named columns: (Feature, Cell, total_reads, met_reads).}
 
 \item{X}{Covariates which might explain variability in mean (methylation). If
-X = NULL, then we do not perform any correction on the mean estimates.}
+X = NULL, then we do not perform any correction on the mean estimates. NOTE
+that if X is provided, \code{rownames} of X should be the unique feature names
+in Y. If the dimensions or all feature names do not match, and error will
+be thrown.}
 
 \item{L}{Total number of basis function to fit the mean-overdispersion trend.
 For L = 1, this reduces to a model that does not correct for the
