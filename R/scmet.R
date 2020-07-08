@@ -14,7 +14,10 @@
 #'   and cell, in a long format \code{\link{data.table}}. That is it should have
 #'   4 named columns: (Feature, Cell, total_reads, met_reads).
 #' @param X Covariates which might explain variability in mean (methylation). If
-#'   X = NULL, then we do not perform any correction on the mean estimates.
+#'   X = NULL, then we do not perform any correction on the mean estimates. NOTE
+#'   that if X is provided, `rownames` of X should be the unique feature names
+#'   in Y. If the dimensions or all feature names do not match, and error will
+#'   be thrown.
 #' @param L Total number of basis function to fit the mean-overdispersion trend.
 #'   For L = 1, this reduces to a model that does not correct for the
 #'   mean-overdispersion relationship.
@@ -100,7 +103,11 @@ scmet <- function(Y, X = NULL, L = 4, use_mcmc = FALSE, use_eb = TRUE,
     rownames(X) <- unique(Y$Feature)
   } else {
     if (NROW(X) != length(unique(Y$Feature))) {
-      stop("Number of X covariates does not match Feature length.")
+      stop("Number of X covariates does not match number of features.")
+    } else if (is.null(rownames(X))) {
+      stop("X should have feture names as rownames(X).")
+    } else if (!all(rownames(X) %in% unique(Y$Feature)) ) {
+      stop("Rownames in X do not match feature names in Y.")
     }
   }
   # Check that dimensions match
