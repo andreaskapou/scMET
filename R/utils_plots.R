@@ -170,11 +170,11 @@ scmet_plot_vf_tail_prob <- function(obj, x = "mu", task = "hvf", title = NULL,
   }
 
   up_task <- toupper(task)
-  size <- c(1.6, 0.5)
+  size <- c(1.6, 0.6)
   names(size) <- c(up_task, "Other")
   fill <- c("red", "gray80")
   names(fill) <- c(up_task, "Other")
-  alpha <- c(0.6, 0.3)
+  alpha <- c(0.65, 0.45)
   names(alpha) <- c(task, "Other")
 
   df <- obj[[tolower(task)]]$summary
@@ -313,11 +313,11 @@ scmet_plot_mean_var <- function(obj, y = "gamma", task = NULL, show_fit = TRUE,
     }
 
     task <- toupper(task)
-    size <- c(1.6, 0.5)
+    size <- c(1.6, 0.65)
     names(size) <- c(task, "Other")
     fill <- c("red", "gray80")
     names(fill) <- c(task, "Other")
-    alpha <- c(0.6, 0.3)
+    alpha <- c(0.65, 0.45)
     names(alpha) <- c(task, "Other")
 
     df <- obj[[tolower(task)]]$summary
@@ -587,9 +587,9 @@ scmet_plot_volcano <- function(diff_obj, task = "diff_epsilon", xlab = NULL,
   idx <- which(!sum_obj[[test]] %in% diff_names)
   sum_obj[[test]][idx] <- "NoDiff"
 
-  size <- c(1.4, 1.4, 0.65)
+  size <- c(1.4, 1.4, 0.7)
   names(size) <- c(diff_names, "NoDiff")
-  alpha <- c(0.55, 0.55, 0.3)
+  alpha <- c(0.6, 0.6, 0.4)
   names(alpha) <- c(diff_names, "NoDiff")
 
   # Subset number of features
@@ -746,9 +746,9 @@ scmet_plot_ma <- function(diff_obj, task = "diff_epsilon", x = "mu",
   idx <- which(!sum_obj[[test]] %in% diff_names)
   sum_obj[[test]][idx] <- "NoDiff"
 
-  size <- c(1.4, 1.4, 0.65)
+  size <- c(1.4, 1.4, 0.7)
   names(size) <- c(diff_names, "NoDiff")
-  alpha <- c(0.55, 0.55, 0.3)
+  alpha <- c(0.6, 0.6, 0.4)
   names(alpha) <- c(diff_names, "NoDiff")
 
   # Subset number of features

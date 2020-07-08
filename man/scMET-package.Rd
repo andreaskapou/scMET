@@ -4,7 +4,7 @@
 \name{scMET-package}
 \alias{scMET-package}
 \alias{.datatable.aware}
-\title{\code{scMET}: Bayesian modelling of DNA methylation at single cell
+\title{\code{scMET}: Bayesian modelling of DNA methylation at single-cell
 resolution.}
 \format{
 An object of class \code{logical} of length 1.
@@ -13,7 +13,7 @@ An object of class \code{logical} of length 1.
 .datatable.aware
 }
 \description{
-Package for analysing single cell DNA methylation datasets.
+Package for analysing single-cell DNA methylation datasets.
 scMET performs feature selection, by identifying highly variable features,
 and also differential testing, based on mean but also more importantly on
 variability between two groups of cells.

@@ -1,7 +1,7 @@
-#' @title \code{scMET}: Bayesian modelling of DNA methylation at single cell
+#' @title \code{scMET}: Bayesian modelling of DNA methylation at single-cell
 #'   resolution.
 #'
-#' @description Package for analysing single cell DNA methylation datasets.
+#' @description Package for analysing single-cell DNA methylation datasets.
 #'   scMET performs feature selection, by identifying highly variable features,
 #'   and also differential testing, based on mean but also more importantly on
 #'   variability between two groups of cells.
