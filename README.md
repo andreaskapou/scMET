@@ -17,9 +17,24 @@ Overview of the `scMET` model is shown below:
 # install.packages("devtools")
 devtools::install_github("andreaskapou/scMET")
 ```
+### Installation issue requiring the V8 library
+The scMET package depends heavily on `Rstan`, whose newer version depends on the V8 library (see this issue: [https://github.com/stan-dev/rstan/issues/831](https://github.com/stan-dev/rstan/issues/831)). For users that don't have the system-level V8 dependency pre-installed, there are two approaches.
+
+1. (Recommended) Download a static libv8 library when installing on Linux:
+```R
+Sys.setenv(DOWNLOAD_STATIC_LIBV8 = 1)
+install.packages("V8")
+```
+see this blogpost for more details: [https://ropensci.org/blog/2020/11/12/installing-v8/](https://ropensci.org/blog/2020/11/12/installing-v8/).
+
+2. If the above approach does not work, then install the `rstan` package from this branch that removes the dependency and the code that calls it and makes no other changes:
+```R
+install_github("makoshark/rstan", ref="develop", subdir="rstan/rstan")
+```
+and then proceed installing scMET as above. If during the installation you still get the error about installing V8, try and set `dependencies = FALSE` when calling the `install_github` function.
 
 ## Online vignette
-scMET is not yet part of the Bioconductor. Until then, an online vigenette can be found in
+scMET is not yet part of the Bioconductor. Until then, an online vignette can be found in
 [https://rpubs.com/cakapourani/scmet-analysis](https://rpubs.com/cakapourani/scmet-analysis).
 
 
