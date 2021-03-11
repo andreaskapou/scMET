@@ -2,12 +2,12 @@ bibentry(
     bibtype = "article",
     author = c(
         person(c("Chantriolnt", "Andreas"), "Kapourani"),
-        person(c("Guido"), "Sanguinetti")),
-    title="Melissa: Bayesian clustering and imputation of single cell methylomes",
-    journal="Genome Biology",
-    year="2019",
-    volume="20",
-    issue="1",
-    pages="61",
-    doi = "10.1186/s13059-019-1665-8"
+        person("Ricard", "Argelaguet"),
+        person(c("Guido"), "Sanguinetti"),
+        person(c("Catalina A."), "Vallejos")
+    ),
+    title="scMET: Bayesian modelling of DNAmethylation heterogeneity at single-cell resolution",
+    journal="bioRxiv",
+    year="2020",
+    doi = "10.1101/2020.07.10.196816"
 )
