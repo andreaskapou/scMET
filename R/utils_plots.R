@@ -160,7 +160,7 @@ scmet_plot_vf_tail_prob <- function(obj, x = "mu", task = "hvf", title = NULL,
   }
   ylab <- paste(toupper(task), "tail probability")
   if (x == "mu") {
-    xlab <- expression(paste("Mean methylation ", mu))
+    xlab <- expression(paste("Mean DNA methylation ", mu))
   } else if (x == "epsilon") {
     xlab <- expression(paste("Residual overdispersion ", epsilon))
   } else if (x == "gamma") {
@@ -251,7 +251,7 @@ scmet_plot_mean_var <- function(obj, y = "gamma", task = NULL, show_fit = TRUE,
         methods::is(obj, "scmet_vb")) ) {
     stop("Object is not generated from scMET.")
   }
-  xlab <- expression(paste("Mean methylation ", mu))
+  xlab <- expression(paste("Mean DNA methylation ", mu))
   if (y == "epsilon") {
     ylab <- expression(paste("Residual overdispersion ", epsilon))
   } else if (y == "gamma") {
@@ -407,7 +407,7 @@ scmet_plot_estimated_vs_true <- function(obj, sim_dt, param = "mu",
   if (!(tolower(param) %in% c("mu", "gamma"))) {
     stop("Param can be either 'mu' or 'gamma'.\n")
   }
-  suffix <- ifelse(tolower(param) == "mu", "mean methylation", "overdispersion")
+  suffix <- ifelse(tolower(param) == "mu", "mean DNA methylation", "overdispersion")
   true = scmet = hpdlow = hpdhigh = bbmle <- NULL
   res <- data.frame(true = sim_dt$theta_true[[param]],
                     scmet = matrixStats::colMedians(obj$posterior[[param]]),
