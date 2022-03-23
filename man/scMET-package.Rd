@@ -12,6 +12,9 @@ An object of class \code{logical} of length 1.
 \usage{
 .datatable.aware
 }
+\value{
+scMET main package documentation.
+}
 \description{
 Package for analysing single-cell DNA methylation datasets.
 scMET performs feature selection, by identifying highly variable features,
@@ -21,5 +24,12 @@ variability between two groups of cells.
 \references{
 Stan Development Team (2020). RStan: the R interface to Stan. R
 package version 2.19.3. https://mc-stan.org
+}
+\seealso{
+\code{\link{scmet}}, \code{\link{scmet_differential}},
+\code{\link{scmet_hvf}}
+}
+\author{
+C.A.Kapourani \email{kapouranis.andreas@gmail.com}
 }
 \keyword{datasets}

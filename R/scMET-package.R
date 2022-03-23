@@ -6,12 +6,20 @@
 #'   and also differential testing, based on mean but also more importantly on
 #'   variability between two groups of cells.
 #'
+#' @return scMET main package documentation.
+#'
+#' @seealso \code{\link{scmet}}, \code{\link{scmet_differential}},
+#'   \code{\link{scmet_hvf}}
+#'
+#' @author C.A.Kapourani \email{kapouranis.andreas@@gmail.com}
+#'
 #' @docType package
 #' @name scMET-package
 #' @useDynLib scMET, .registration = TRUE
 #' @import methods
-#' @import Rcpp
+#' @import Rcpp BiocStyle rstantools
 #' @importFrom rstan sampling vb
+#' @importFrom cowplot plot_grid
 #' @rawNamespace importFrom(magrittr,"%>%")
 #' @rawNamespace importFrom(data.table,":=")
 #'

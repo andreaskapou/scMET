@@ -38,4 +38,7 @@ scMET is not yet part of the Bioconductor. Until then, an online vignette can be
 [https://rpubs.com/cakapourani/scmet-analysis](https://rpubs.com/cakapourani/scmet-analysis).
 
 
+# Citation:
+Kapourani, C. A., Argelaguet, R., Sanguinetti, G., & Vallejos, C. A. (2021). scMET: Bayesian modeling of DNA methylation heterogeneity at single-cell resolution. Genome biology, 22(1), 1-21.
 
+[https://genomebiology.biomedcentral.com/articles/10.1186/s13059-021-02329-8](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-021-02329-8)

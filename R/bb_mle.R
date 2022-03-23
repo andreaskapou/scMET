@@ -299,7 +299,7 @@ bb_mle <- function(x, w = NULL, n_starts = 10, lower_thresh = 1e-3){
   # Derivative wrt \beta
   dbdb <- n * (trigamma(ab_sum) - trigamma(w[2])) +
     sum(trigamma(w[2] + N - K) - trigamma(ab_sum + N))
-  h <- matrix(c(dada, dbda, dbda, dbdb), ncol = 2, byrow = T)
+  h <- matrix(c(dada, dbda, dbda, dbdb), ncol = 2, byrow = TRUE)
   # If we required the Negative Log Likelihood
   if (is_NLL) { h <- (-1) * h }
   return(h)
