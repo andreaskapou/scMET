@@ -1,3 +1,117 @@
+#' @title Convert from SingleCellExperiment to scmet object
+#'
+#' @description Helper function that converts SCE objects to scmet objects
+#' that can be used as input to the scmet function. The structure of the
+#' SCE object to store single cell methylation data is the following. We
+#' create two assays, `met` storing methylated CpGs and `total` storing
+#' total number of CpGs. Rows correspond to features and columns to cells,
+#' similar to scRNA-seq convention. The `rownames` and `colnames` slots
+#' should store the feature and cell names, respectively. Covariates `X`
+#' that might explain variability in mean (methylation) should be stored
+#' in `sce@metadata$X`.
+#'
+#' @param sce SingleCellExperiment object
+#'
+#' @return A named list containing the matrix Y (methylation data in format
+#' required by the `scmet` function) and the covariates X.
+#'
+#' @seealso \code{\link{scmet}}, \code{\link{scmet_differential}},
+#'   \code{\link{scmet_hvf_lvf}}
+#'
+#' @author C.A.Kapourani \email{C.A.Kapourani@@ed.ac.uk}
+#' @export
+sce_to_scmet <- function(sce) {
+  Feature = Cell <- NULL
+  # Extract methylated and total reads
+  met <- SummarizedExperiment::assay(sce, "met") %>%
+    base::as.matrix() %>%
+    data.table::as.data.table()
+  total <- SummarizedExperiment::assay(sce, "total") %>%
+    base::as.matrix() %>%
+    data.table::as.data.table()
+
+  # Convert missing values to NAs
+  met[met == -1] <- NA
+  total[total == -1] <- NA
+
+  met <- data.table::data.table(Feature = rownames(sce), met)
+  total <- data.table::data.table(Feature = rownames(sce), total)
+
+  met <- data.table::melt(met, id.vars = "Feature",
+                          measure.vars = colnames(sce)) %>%
+    stats::na.omit()
+  total <- data.table::melt(total, id.vars = "Feature",
+                            measure.vars = colnames(sce)) %>%
+    stats::na.omit()
+
+  colnames(met) <- c("Feature", "Cell", "met_reads")
+  colnames(total) <- c("Feature", "Cell", "total_reads")
+
+  # Create final methylation data object Y
+  Y <- cbind(total, data.table(met_reads = met$met_reads))
+  Y <- Y[order(Feature, Cell), , drop = FALSE]
+  # Extract covariates X
+  X <- sce@metadata$X
+  return(list(Y = Y, X = X))
+}
+
+
+#' @title Convert from scmet to SingleCellExperiment object.
+#'
+#' @description Helper function that converts an scmet to SCE object. The
+#' structure of the SCE object to store single cell methylation data is the
+#' following. We create two assays, `met` storing methylated CpGs and `total`
+#' storing total number of CpGs. Rows correspond to features and columns to
+#' cells, similar to scRNA-seq convention. The `rownames` and `colnames` slots
+#' should store the feature and cell names, respectively. Covariates `X`
+#' that might explain variability in mean (methylation) should be stored
+#' in `sce@metadata$X`.
+#'
+#' @param Y Methylation data in data.table format.
+#' @param X (Optional) Matrix of covariates.
+#'
+#' @return An SCE object with the structure described above.
+#'
+#' @seealso \code{\link{scmet}}, \code{\link{scmet_differential}},
+#'   \code{\link{scmet_hvf_lvf}}
+#'
+#' @author C.A.Kapourani \email{C.A.Kapourani@@ed.ac.uk}
+#' @export
+scmet_to_sce <- function(Y, X = NULL) {
+  # First we create a wide format for methylated cpgs
+  met_Y <- Y[, c("Feature", "Cell", "met_reads")]
+  met_Y <- data.table::dcast(met_Y, Feature ~ Cell, value.var = "met_reads")
+  # NAs are set to -1
+  met_Y[is.na(met_Y)] <- -1
+
+  # Next we create a wide format for total cpgs
+  tot_Y <- Y[, c("Feature", "Cell", "total_reads")]
+  tot_Y <- data.table::dcast(tot_Y, Feature ~ Cell, value.var = "total_reads")
+  tot_Y[is.na(tot_Y)] <- -1
+
+  # Extract cell and feature names
+  feature_names <- tot_Y$Feature
+  tot_Y <- tot_Y[, -c("Feature")]
+  met_Y <- met_Y[, -c("Feature")]
+  cell_names <- base::colnames(tot_Y)
+
+  # Create sparse matrix
+  total <- Matrix::Matrix(as.matrix(tot_Y), sparse = TRUE)
+  base::rownames(total) <- feature_names
+  base::colnames(total) <- cell_names
+
+  # Create sparse matrix
+  met <- Matrix::Matrix(as.matrix(met_Y), sparse = TRUE)
+  base::rownames(met) <- feature_names
+  base::colnames(met) <- cell_names
+
+  sce <- SingleCellExperiment::SingleCellExperiment(list(met = met, total = total),
+                              metadata = list(X = X)
+  )
+  return(sce)
+}
+
+
 #' @title Create design matrix
 #'
 #' @description Generic function for crating a radial basis function (RBF)

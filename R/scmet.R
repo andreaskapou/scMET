@@ -16,7 +16,7 @@
 #' @param X Covariates which might explain variability in mean (methylation). If
 #'   X = NULL, then we do not perform any correction on the mean estimates. NOTE
 #'   that if X is provided, `rownames` of X should be the unique feature names
-#'   in Y. If the dimensions or all feature names do not match, and error will
+#'   in Y. If the dimensions or all feature names do not match, an error will
 #'   be thrown.
 #' @param L Total number of basis function to fit the mean-overdispersion trend.
 #'   For L = 1, this reduces to a model that does not correct for the

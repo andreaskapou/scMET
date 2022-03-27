@@ -68,12 +68,13 @@ To highlight the main functionality of `scMET` we first apply it on synthetic da
 # Load package
 suppressPackageStartupMessages(library(scMET))
 suppressPackageStartupMessages(library(data.table))
-suppressPackageStartupMessages(library(magrittr))
+suppressPackageStartupMessages(library(dplyr))
 set.seed(123)
 ```
 
 ## Loading synthetic data
-scMET comes with simulated scBS-seq data from a single population. The users can generate their own synthetic data using the `scmet_simulate` function. 
+scMET comes with simulated scBS-seq data from a single population. The users can generate their own synthetic data using the `scmet_simulate` function. __NOTE__ For Interoperability of scMET and `SingleCellExperiment` objects see last section of this vignette.
+
 ```{r load_data}
 # Synthetic data: list with following elements
 names(scmet_dt)
@@ -343,6 +344,40 @@ gg2 <- scmet_plot_ma(diff_obj, task = "diff_epsilon", x = "mu")
 cowplot::plot_grid(gg1, gg2, ncol = 2)
 ```
 
+# Interoperability between scMET and the SingleCellExperiment class
+In this section we show the ability to convert between scMET objects and `SingleCellExperiment` (SCE) objects.
+
+`SingleCellExperiment` is a class for storing single-cell experiment data used by many Bioconductor analysis packages. To the best of our knowledge there is no standard format for storing scBS-seq data. However, to ease analysis pipeline with scMET for users with experience in Bioconductor we provide helper functions for converting between those formats. 
+
+The structure of the SCE object to store scBS-seq data is as follows. We create two assays, `met` storing methylated CpGs and `total` storing total number of CpGs. Rows correspond to features and columns to cells, similar to scRNA-seq convention. The `rownames` and `colnames` slots should store the feature and cell names, respectively. Covariates `X` that might explain variability in mean (methylation) should be stored in `sce@metadata$X`.
+
+Below we show an example of converting between these formats. First we create a copy of the synthetic data and sort also by the `Cell` column.
+
+```{r}
+Y_scmet <- scmet_dt$Y # Methylation data
+Y_scmet <- Y_scmet[order(Feature, Cell), , drop = FALSE]
+X <- scmet_dt$X # Covariates
+head(Y_scmet)
+```
+
+Convert from scMET to SCE object:
+```{r}
+# We could set X = NULL if we do not have covariates
+Y_sce <- scmet_to_sce(Y = Y_scmet, X = X)
+Y_sce
+```
+
+Next, we convert back to scMET object:
+```{r}
+scmet_obj <- sce_to_scmet(sce = Y_sce)
+head(scmet_obj$Y)
+```
+
+Finally we can check that the final object is the same as our initial one:
+```{r}
+all(Y_scmet == scmet_obj$Y)
+```
+
 
 # Session Info
 This vignette was compiled using:
@@ -351,4 +386,4 @@ sessionInfo()
 ```
 
 # Acknowledgements
-This study was supported by funding from the University of Edinburgh and Medical Research Council (core grant to the MRC Institute of Genetics and Cancer).
+This study was supported by funding from the University of Edinburgh and Medical Research Council (core grant to the MRC Institute of Genetics and Cancer). Many thanks to _John Riddell_ for the conversion functions.

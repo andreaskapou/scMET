@@ -41,7 +41,7 @@ and cell, in a long format \code{\link{data.table}}. That is it should have
 \item{X}{Covariates which might explain variability in mean (methylation). If
 X = NULL, then we do not perform any correction on the mean estimates. NOTE
 that if X is provided, \code{rownames} of X should be the unique feature names
-in Y. If the dimensions or all feature names do not match, and error will
+in Y. If the dimensions or all feature names do not match, an error will
 be thrown.}
 
 \item{L}{Total number of basis function to fit the mean-overdispersion trend.
