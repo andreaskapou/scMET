@@ -3,12 +3,14 @@
 #' @description Helper function that converts SCE objects to scmet objects
 #' that can be used as input to the scmet function. The structure of the
 #' SCE object to store single cell methylation data is the following. We
-#' create two assays, `met` storing methylated CpGs and `total` storing
+#' create two sparse assays, `met` storing methylated CpGs and `total` storing
 #' total number of CpGs. Rows correspond to features and columns to cells,
-#' similar to scRNA-seq convention. The `rownames` and `colnames` slots
-#' should store the feature and cell names, respectively. Covariates `X`
-#' that might explain variability in mean (methylation) should be stored
-#' in `sce@metadata$X`.
+#' similar to scRNA-seq convention. To distinguish between a feature
+#' (in a cell) having zero methylated CpGs vs not having CpG coverage at all
+#' (missing value), we set the missing values to -1. The `rownames` and
+#' `colnames` slots should store the feature and cell names, respectively.
+#' Covariates `X` that might explain variability in mean (methylation)
+#' should be stored in `sce@metadata$X`.
 #'
 #' @param sce SingleCellExperiment object
 #'

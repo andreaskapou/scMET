@@ -349,7 +349,7 @@ In this section we show the ability to convert between scMET objects and `Single
 
 `SingleCellExperiment` is a class for storing single-cell experiment data used by many Bioconductor analysis packages. To the best of our knowledge there is no standard format for storing scBS-seq data. However, to ease analysis pipeline with scMET for users with experience in Bioconductor we provide helper functions for converting between those formats. 
 
-The structure of the SCE object to store scBS-seq data is as follows. We create two assays, `met` storing methylated CpGs and `total` storing total number of CpGs. Rows correspond to features and columns to cells, similar to scRNA-seq convention. The `rownames` and `colnames` slots should store the feature and cell names, respectively. Covariates `X` that might explain variability in mean (methylation) should be stored in `sce@metadata$X`.
+The structure of the SCE object to store scBS-seq data is as follows. We create two assays, `met` storing methylated CpGs and `total` storing total number of CpGs. Rows correspond to features and columns to cells, similar to scRNA-seq convention. To distinguish between a feature (in a cell) having zero methylated CpGs vs not having CpG coverage at all (missing value), we set the missing values to -1. The `rownames` and `colnames` slots should store the feature and cell names, respectively. Covariates `X` that might explain variability in mean (methylation) should be stored in `sce@metadata$X`.
 
 Below we show an example of converting between these formats. First we create a copy of the synthetic data and sort also by the `Cell` column.
 
