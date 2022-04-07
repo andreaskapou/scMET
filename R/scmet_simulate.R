@@ -55,8 +55,8 @@ scmet_simulate <- function(N_feat = 100, N_cells = 50, N_cpgs = 15, L = 4,
   }
 
   # Parameter checks
-  if (is.null(L)) { L = 4 }
-  if (is.null(X) & is.null(w_mu)) { w_mu = c(-0.5, -1.5)}
+  if (is.null(L)) { L <- 4 }
+  if (is.null(X) & is.null(w_mu)) { w_mu <- c(-0.5, -1.5)}
   # Initialize w_gamma
   w_gamma <- .init_w_gamma(w_gamma = w_gamma, L = L)
 
@@ -74,7 +74,7 @@ scmet_simulate <- function(N_feat = 100, N_cells = 50, N_cpgs = 15, L = 4,
                               w_gamma = w_gamma, s_gamma = s_gamma, rbf_c = rbf_c)
 
   # Generate number of methylated CpGs from Beta Binomial
-  met_cpgs_list <- lapply(X = 1:N_feat, function(n)
+  met_cpgs_list <- lapply(X = seq_len(N_feat), function(n)
     VGAM::rbetabinom(length(cpgs_list[[n]]), cpgs_list[[n]],
                      prob = mu[n], rho = gamma[n]))
 
@@ -144,8 +144,8 @@ scmet_simulate_diff <- function(N_feat = 100, N_cells = 50, N_cpgs = 15, L = 4,
   set.seed(seed)
 
   # Parameter checks
-  if (is.null(L)) { L = 4 }
-  if (is.null(X) & is.null(w_mu)) { w_mu = c(-0.5, -1.5)}
+  if (is.null(L)) { L <- 4 }
+  if (is.null(X) & is.null(w_mu)) { w_mu <- c(-0.5, -1.5)}
   assertthat::assert_that(diff_feat_prcg_mu >= 0 & diff_feat_prcg_mu <= 1)
   assertthat::assert_that(diff_feat_prcg_gamma >= 0 & diff_feat_prcg_gamma <= 1)
   assertthat::assert_that(OR_change_mu > 0 )
@@ -174,7 +174,7 @@ scmet_simulate_diff <- function(N_feat = 100, N_cells = 50, N_cpgs = 15, L = 4,
   ###
   # Differential features in terms of variability
   ##
-  diff_var_feat = diff_var_feat_up = diff_var_feat_down = 0
+  diff_var_feat = diff_var_feat_up = diff_var_feat_down <- 0
   if (diff_feat_prcg_gamma != 0) {
     if (N_feat * diff_feat_prcg_gamma < 5) {
       stop("Too few differential features!\n",
@@ -192,7 +192,7 @@ scmet_simulate_diff <- function(N_feat = 100, N_cells = 50, N_cpgs = 15, L = 4,
                             size = round(N_feat * diff_feat_prcg_gamma))
     # Create overdispersion params that have increase in Odds Ratio
     pivot <- round(length(diff_feat_idx)/1.5)
-    diff_up_idx <- diff_feat_idx[1:pivot]
+    diff_up_idx <- diff_feat_idx[seq_len(pivot)]
     diff_down_idx <- diff_feat_idx[(pivot + 1):(length(diff_feat_idx))]
     gamma_B[diff_up_idx] <- stats::plogis(
       stats::qlogis(gamma_B[diff_up_idx]) + log(OR_change_gamma) )
@@ -214,7 +214,7 @@ scmet_simulate_diff <- function(N_feat = 100, N_cells = 50, N_cpgs = 15, L = 4,
   ##
   # Differential features in terms of mean methylation
   ##
-  diff_mean_feat = diff_mean_feat_up = diff_mean_feat_down = 0
+  diff_mean_feat = diff_mean_feat_up = diff_mean_feat_down <- 0
   if (diff_feat_prcg_mu != 0) {
     if (N_feat * diff_feat_prcg_mu < 5) {
       stop("Too few differential features!\n",
@@ -233,7 +233,7 @@ scmet_simulate_diff <- function(N_feat = 100, N_cells = 50, N_cpgs = 15, L = 4,
                             size = round(N_feat * diff_feat_prcg_mu))
     # Create mean params that have increase in Odds Ratio
     pivot <- round(length(diff_feat_idx)/1.5)
-    diff_up_idx <- diff_feat_idx[1:pivot]
+    diff_up_idx <- diff_feat_idx[seq_len(pivot)]
     diff_down_idx <- diff_feat_idx[(pivot + 1):(length(diff_feat_idx))]
     mu_B[diff_up_idx] <- stats::plogis(
       stats::qlogis(mu_B[diff_up_idx]) + log(OR_change_mu) )
@@ -253,7 +253,7 @@ scmet_simulate_diff <- function(N_feat = 100, N_cells = 50, N_cpgs = 15, L = 4,
   }
 
   # Generate number of methylated CpGs from Beta Binomial
-  met_cpgs_list_B <- lapply(X = 1:N_feat, function(n)
+  met_cpgs_list_B <- lapply(X = seq_len(N_feat), function(n)
     VGAM::rbetabinom(length(cpgs_list_B[[n]]), cpgs_list_B[[n]],
                      prob = mu_B[n], rho = gamma_B[n]))
 
@@ -366,18 +366,18 @@ scmet_simulate_diff <- function(N_feat = 100, N_cells = 50, N_cpgs = 15, L = 4,
   #         parameter with feature_names.
   if (is.null(feature_names)) {
     Y <- data.table::data.table(
-      "Feature" = unlist(sapply(1:N_feat, function(n)
+      "Feature" = unlist(sapply(seq_len(N_feat), function(n)
         rep(paste0("Feature_", n), length(cpgs_list[[n]])))),
-      "Cell" = unlist(sapply(1:N_feat, function(n) {
+      "Cell" = unlist(sapply(seq_len(N_feat), function(n) {
         cell_id <- sample(N_cells, length(cpgs_list[[n]]))
         paste0("Cell_", cell_id)
       }) ) )
   }
   else {
     Y <- data.table::data.table(
-      "Feature" = unlist(sapply(1:N_feat, function(n)
+      "Feature" = unlist(sapply(seq_len(N_feat), function(n)
         rep(feature_names[n], length(cpgs_list[[n]])))),
-      "Cell" = unlist(sapply(1:N_feat, function(n) {
+      "Cell" = unlist(sapply(seq_len(N_feat), function(n) {
         cell_id <- sample(N_cells, length(cpgs_list[[n]]))
         paste0("Cell_", cell_id)
       }) ) )

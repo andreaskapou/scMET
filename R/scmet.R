@@ -198,7 +198,7 @@ scmet <- function(Y, X = NULL, L = 4, use_mcmc = FALSE, use_eb = TRUE,
              logit_gamma = stats::qlogis(bb_mle_fit$gamma))
       }
       # generate a list of lists to specify initial values
-      init_vals <- lapply(1:chains, function(id) init_func())
+      init_vals <- lapply(seq_len(chains), function(id) init_func())
     }
     cat(date(), ": Finished EB.\n")
   }
@@ -274,7 +274,7 @@ scmet <- function(Y, X = NULL, L = 4, use_mcmc = FALSE, use_eb = TRUE,
   colnames(posterior$mu) = colnames(posterior$gamma) =
     colnames(posterior$epsilon) <- unique(Y$Feature)
   colnames(posterior$w_mu) <- colnames(X)
-  colnames(posterior$w_gamma) <- paste0("rbf", 1:L)
+  colnames(posterior$w_gamma) <- paste0("rbf", seq_len(L))
   # Set object class
   cl <- ifelse(use_mcmc, "scmet_mcmc", "scmet_vb")
   # Store list objects

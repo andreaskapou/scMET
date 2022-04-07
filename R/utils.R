@@ -152,13 +152,13 @@ create_design_matrix <- function(L, X, c = 1.2) {
   if (L > 1) {
     # Compute mean locations
     ms <- rep(0, L - 1)
-    for (l in 1:(L - 1)) {
+    for (l in seq_len((L - 1))) {
       ms[l] <- l * ((max(X) - min(X)) / L ) + min(X)
     }
     # Compute scaling parameter
     h <- (ms[2] - ms[1]) * c
     H <- matrix(1, nrow = N, ncol = L)
-    for (l in 1:(L - 1)) {
+    for (l in seq_len((L - 1))) {
       H[, l + 1] <- apply(as.matrix(X), 1, .rbf_basis, mus = ms[l], h = h)
     }
   } else {

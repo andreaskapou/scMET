@@ -81,7 +81,7 @@ bb_mle <- function(x, w = NULL, n_starts = 10, lower_thresh = 1e-3){
       # under-dispersion or the MM estimate has issues (e.g. different n_i).
       # This might cause problems and might not converge to ML estimate.
       # TODO: Again, assume data coming from a Binomial distribution???
-      if (any(w < lower_thresh)) { w[w < lower_thresh] = lower_thresh }
+      if (any(w < lower_thresh)) { w[w < lower_thresh] <- lower_thresh }
       else {mu <- w[1] / sum(w) } # Compute mean from MM
     }
   }
@@ -115,7 +115,7 @@ bb_mle <- function(x, w = NULL, n_starts = 10, lower_thresh = 1e-3){
       w_mat <- rbind(w, w_mat, c(0.1,0.1), c(0.5,0.5), c(1,1), c(3,3), c(4,4))
       # Maximum number of possible initial values
       iter <- min(NROW(w_mat), n_starts)
-      for (k in 1:iter) {
+      for (k in seq_len(iter)) {
         # Fit a Beta-Binomial distribution using Newton's method
         fit <- try(.bb_newton(x, w_mat[k, ]), silent = TRUE)
         if (inherits(fit, "try-error")) {
@@ -155,7 +155,7 @@ bb_mle <- function(x, w = NULL, n_starts = 10, lower_thresh = 1e-3){
       w <- .bb_mm(n = x[[1]], k = x[[2]])
       # Check if any parameter is ~0
       if (any(w < lower_thresh)) {
-        w[w < lower_thresh] = lower_thresh
+        w[w < lower_thresh] <- lower_thresh
         is_binomial <- TRUE
       }else{
         mu <- w[1] / sum(w)
@@ -183,9 +183,9 @@ bb_mle <- function(x, w = NULL, n_starts = 10, lower_thresh = 1e-3){
   chi2_test <- stats::pchisq(q = lrt, df = 1, lower.tail = FALSE)
 
   # Compute Tarone's Z statistic for overdispersion
-  p_hat = sum(x[[2]]) / sum(x[[1]])
-  S = sum( (x[[2]] - x[[1]] * p_hat)^2 / (p_hat * (1 - p_hat)) )
-  Z_score = (S - sum(x[[1]])) / sqrt(2 * sum(x[[1]] * (x[[1]] - 1)))
+  p_hat <- sum(x[[2]]) / sum(x[[1]])
+  S <- sum( (x[[2]] - x[[1]] * p_hat)^2 / (p_hat * (1 - p_hat)) )
+  Z_score <- (S - sum(x[[1]])) / sqrt(2 * sum(x[[1]] * (x[[1]] - 1)))
   # Compute p-values under standard normal for the NULL hypothesis
   z_test <- 2 * stats::pnorm(-abs(Z_score))
 
@@ -320,7 +320,7 @@ bb_mle <- function(x, w = NULL, n_starts = 10, lower_thresh = 1e-3){
                        epsilon = 1e-5) {
   conv <- 1
   w_prev <- w
-  for (i in 1:max_iter) {
+  for (i in seq_len(max_iter)) {
     w_cur <- w_prev - gamma * MASS::ginv(.bb_hessian(w_prev, x)) %*%
       .bb_grad(w_prev, x)
     if (any(w_cur > 2e7)) {

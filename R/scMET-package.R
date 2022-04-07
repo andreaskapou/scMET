@@ -17,7 +17,7 @@
 #' @name scMET-package
 #' @useDynLib scMET, .registration = TRUE
 #' @import methods
-#' @import Rcpp BiocStyle rstantools
+#' @import Rcpp BiocStyle rstantools, dplyr
 #' @importFrom rstan sampling vb
 #' @importFrom cowplot plot_grid
 #' @rawNamespace importFrom(magrittr,"%>%")
