@@ -68,7 +68,7 @@ To highlight the main functionality of `scMET` we first apply it on synthetic da
 # Load package
 suppressPackageStartupMessages(library(scMET))
 suppressPackageStartupMessages(library(data.table))
-suppressPackageStartupMessages(library(dplyr))
+suppressPackageStartupMessages(library(magrittr))
 set.seed(123)
 ```
 
@@ -110,16 +110,16 @@ plot(scmet_dt$X[,2], scmet_dt$theta_true$mu, pch = 20,
 ```
 
 ## scMET inference
-Now we can perform inference on the simulated data using the `scmet` function. In addition to providing the input data `Y` and covariates `X`, we set `L = 4` radial basis functions to model the mean-overdispersion relationship. Also, we set the total number of VB iterations to `iter = 5000` for efficiency purposes. We let all the other parameters as default.
+Now we can perform inference on the simulated data using the `scmet` function. In addition to providing the input data `Y` and covariates `X`, we set `L = 4` radial basis functions to model the mean-overdispersion relationship. Also, we set the total number of VB iterations to `iter = 500` for efficiency purposes (hence the model will most probably not converge and which can be seen by the fitted lines being further away than expected). We let all the other parameters as default.
 
-__NOTE 1__ The user should set this to a much higher value, e.g. around 20,000 when running VB.
+__NOTE 1__ The user should set this to a much higher value, e.g. around 20,000 when running VB so the model converges.
 
 __NOTE 2__ For relatively small datasets we recommend using the MCMC implementation of scMET, i.e. setting `use_mcmc = TRUE`, since it is more stable than the VB approximation and gives more accurate results.
 
 ```{r run_scmet_synthetic, warning=FALSE, message=FALSE}
 # Run with seed for reproducibility
 fit_obj <- scmet(Y = scmet_dt$Y, X = scmet_dt$X, L = 4,
-                 iter = 5000, seed = 12)
+                 iter = 500, seed = 12)
 ```
 
 
@@ -266,11 +266,11 @@ __NOTE 2__ For relatively small datasets we recommend using the MCMC implementat
 # Run scMET for group A
 fit_A <- scmet(Y = scmet_diff_dt$scmet_dt_A$Y,
                X = scmet_diff_dt$scmet_dt_A$X, L = 4, 
-               iter = 5000, seed = 12)
+               iter = 500, seed = 12)
 # Run scMET for group B
 fit_B <- scmet(Y = scmet_diff_dt$scmet_dt_B$Y,
                X = scmet_diff_dt$scmet_dt_B$X, L = 4, 
-               iter = 5000, seed = 12)
+               iter = 500, seed = 12)
 ```
 
 Showing mean - overdispersion plots for each group

@@ -72,7 +72,7 @@ parameter \code{gamma} and define an overdispersion contribution threshold
 }
 \examples{
 # Fit scMET
-obj <- scmet(Y = scmet_dt$Y, X = scmet_dt$X, L = 4, iter = 2000)
+obj <- scmet(Y = scmet_dt$Y, X = scmet_dt$X, L = 4, iter = 100)
 
 # Run HVF analysis
 obj <- scmet_hvf(scmet_obj = obj)

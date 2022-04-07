@@ -49,7 +49,7 @@ analysis is performed, points will be also coloured accordingly.
 }
 \examples{
 # Fit scMET
-obj <- scmet(Y = scmet_dt$Y, X = scmet_dt$X, L = 4, iter = 2000)
+obj <- scmet(Y = scmet_dt$Y, X = scmet_dt$X, L = 4, iter = 200)
 scmet_plot_mean_var(obj = obj, y = "gamma")
 
 }

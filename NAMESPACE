@@ -23,6 +23,8 @@ import(data.table)
 import(ggplot2)
 import(methods)
 import(rstantools)
+importFrom(RcppParallel,CxxFlags)
+importFrom(RcppParallel,RcppParallelLibs)
 importFrom(cowplot,plot_grid)
 importFrom(data.table,":=")
 

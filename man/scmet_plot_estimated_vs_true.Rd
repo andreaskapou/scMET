@@ -53,7 +53,7 @@ scMET is shown as arrows.
 }
 \examples{
 # Fit scMET
-obj <- scmet(Y = scmet_dt$Y, X = scmet_dt$X, L = 4, iter = 2000)
+obj <- scmet(Y = scmet_dt$Y, X = scmet_dt$X, L = 4, iter = 200)
 scmet_plot_estimated_vs_true(obj = obj, sim_dt = scmet_dt, param = "mu")
 
 # BB MLE fit to compare with scMET

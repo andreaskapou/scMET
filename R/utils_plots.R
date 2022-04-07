@@ -1,16 +1,16 @@
 # Define ggplot2 theme for scatter plots
 .scatter_theme <- function(legend_pos = "top") {
-  p <- theme(
-    plot.title = element_text(hjust = 0.5, size = rel(1.1),
-                              margin = margin(0,0,2,0), color = "black"),
+  p <- ggplot2::theme(
+    plot.title = ggplot2::element_text(hjust = 0.5, size = rel(1.1),
+                              margin = ggplot2::margin(0,0,2,0), color = "black"),
     legend.position = legend_pos,
-    legend.title = element_blank(),
-    axis.line = element_line(),
+    legend.title = ggplot2::element_blank(),
+    axis.line = ggplot2::element_line(),
     #panel.border = element_blank(),
     #panel.grid.major = element_line(colour = "gainsboro"),
-    panel.background = element_blank(),
-    axis.text = element_text(color = "black", size = rel(0.8)),
-    axis.title = element_text(color = "black", size = rel(1.2))
+    panel.background = ggplot2::element_blank(),
+    axis.text = ggplot2::element_text(color = "black", size = rel(0.8)),
+    axis.title = ggplot2::element_text(color = "black", size = rel(1.2))
   )
   return(p)
 }
@@ -56,7 +56,7 @@
 #'
 #' @examples
 #' # Fit scMET
-#' obj <- scmet(Y = scmet_dt$Y, X = scmet_dt$X, L = 4, iter = 2000)
+#' obj <- scmet(Y = scmet_dt$Y, X = scmet_dt$X, L = 4, iter = 200)
 #' obj <- scmet_hvf(scmet_obj = obj, delta_e = 0.7)
 #' scmet_plot_vf_tail_prob(obj = obj, task = "hvf")
 #'
@@ -139,7 +139,7 @@ scmet_plot_efdr_efnr_grid <- function(obj, task = "hvf") {
 #'
 #' @examples
 #' # Fit scMET
-#' obj <- scmet(Y = scmet_dt$Y, X = scmet_dt$X, L = 4, iter = 2000)
+#' obj <- scmet(Y = scmet_dt$Y, X = scmet_dt$X, L = 4, iter = 200)
 #' obj <- scmet_hvf(scmet_obj = obj, delta_e = 0.7)
 #' scmet_plot_vf_tail_prob(obj = obj, x = "mu")
 #'
@@ -240,7 +240,7 @@ scmet_plot_vf_tail_prob <- function(obj, x = "mu", task = "hvf", title = NULL,
 #'
 #' @examples
 #' # Fit scMET
-#' obj <- scmet(Y = scmet_dt$Y, X = scmet_dt$X, L = 4, iter = 2000)
+#' obj <- scmet(Y = scmet_dt$Y, X = scmet_dt$X, L = 4, iter = 200)
 #' scmet_plot_mean_var(obj = obj, y = "gamma")
 #'
 #' @export
@@ -385,7 +385,7 @@ scmet_plot_mean_var <- function(obj, y = "gamma", task = NULL, show_fit = TRUE,
 #'
 #' @examples
 #' # Fit scMET
-#' obj <- scmet(Y = scmet_dt$Y, X = scmet_dt$X, L = 4, iter = 2000)
+#' obj <- scmet(Y = scmet_dt$Y, X = scmet_dt$X, L = 4, iter = 200)
 #' scmet_plot_estimated_vs_true(obj = obj, sim_dt = scmet_dt, param = "mu")
 #'
 #' # BB MLE fit to compare with scMET
@@ -524,9 +524,9 @@ scmet_plot_estimated_vs_true <- function(obj, sim_dt, param = "mu",
 #' @examples
 #' # Fit scMET for each group
 #' fit_A <- scmet(Y = scmet_diff_dt$scmet_dt_A$Y,
-#' X = scmet_diff_dt$scmet_dt_A$X, L = 4, iter = 2000, seed = 12)
+#' X = scmet_diff_dt$scmet_dt_A$X, L = 4, iter = 200, seed = 12)
 #' fit_B <- scmet(Y = scmet_diff_dt$scmet_dt_B$Y,
-#' X = scmet_diff_dt$scmet_dt_B$X, L = 4, iter = 2000, seed = 12)
+#' X = scmet_diff_dt$scmet_dt_B$X, L = 4, iter = 200, seed = 12)
 #'
 #' # Run differential test
 #' diff_obj <- scmet_differential(obj_A = fit_A, obj_B = fit_B)
@@ -658,9 +658,9 @@ scmet_plot_volcano <- function(diff_obj, task = "diff_epsilon", xlab = NULL,
 #' @examples
 #' # Fit scMET for each group
 #' fit_A <- scmet(Y = scmet_diff_dt$scmet_dt_A$Y,
-#' X = scmet_diff_dt$scmet_dt_A$X, L = 4, iter = 2000, seed = 12)
+#' X = scmet_diff_dt$scmet_dt_A$X, L = 4, iter = 200, seed = 12)
 #' fit_B <- scmet(Y = scmet_diff_dt$scmet_dt_B$Y,
-#' X = scmet_diff_dt$scmet_dt_B$X, L = 4, iter = 2000, seed = 12)
+#' X = scmet_diff_dt$scmet_dt_B$X, L = 4, iter = 200, seed = 12)
 #'
 #' # Run differential test
 #' diff_obj <- scmet_differential(obj_A = fit_A, obj_B = fit_B)

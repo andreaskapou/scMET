@@ -71,8 +71,8 @@
 #' @author C.A.Kapourani \email{C.A.Kapourani@@ed.ac.uk}
 #'
 #' @examples
-#' # Fit scMET
-#' obj <- scmet(Y = scmet_dt$Y, X = scmet_dt$X, L = 4, iter = 2000)
+#' # Fit scMET (in practice 'iter' should be much larger)
+#' obj <- scmet(Y = scmet_dt$Y, X = scmet_dt$X, L = 4, iter = 500)
 #'
 #' @importFrom stats qlogis
 #' @export
@@ -324,8 +324,7 @@ scmet <- function(Y, X = NULL, L = 4, use_mcmc = FALSE, use_eb = TRUE,
       algorithm <- "meanfield"
     }
     if (iter < 2000) {
-      message("Small number of VB iterations. Set by default to 20000.\n")
-      iter <- 20000
+      message("Small number of VB iterations. scMET might not converge.\n")
     }
     if (use_eb & init_using_eb) {
       posterior <- rstan::vb(object = stanmodels$scmet, data = dt, seed = seed,

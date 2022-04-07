@@ -27,7 +27,7 @@ optimal posterior evidence threshold to achieve a specific EFDR.
 }
 \examples{
 # Fit scMET
-obj <- scmet(Y = scmet_dt$Y, X = scmet_dt$X, L = 4, iter = 2000)
+obj <- scmet(Y = scmet_dt$Y, X = scmet_dt$X, L = 4, iter = 200)
 obj <- scmet_hvf(scmet_obj = obj, delta_e = 0.7)
 scmet_plot_vf_tail_prob(obj = obj, task = "hvf")
 
