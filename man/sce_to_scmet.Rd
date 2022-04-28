@@ -7,7 +7,7 @@
 sce_to_scmet(sce)
 }
 \arguments{
-\item{sce}{SingleCellExperiment object}
+\item{sce}{SummarizedExperiment object}
 }
 \value{
 A named list containing the matrix Y (methylation data in format
@@ -19,12 +19,19 @@ that can be used as input to the scmet function. The structure of the
 SCE object to store single cell methylation data is the following. We
 create two sparse assays, \code{met} storing methylated CpGs and \code{total} storing
 total number of CpGs. Rows correspond to features and columns to cells,
-similar to scRNA-seq convention. To distinguish between a feature
-(in a cell) having zero methylated CpGs vs not having CpG coverage at all
-(missing value), we set the missing values to -1. The \code{rownames} and
-\code{colnames} slots should store the feature and cell names, respectively.
-Covariates \code{X} that might explain variability in mean (methylation)
-should be stored in \code{sce@metadata$X}.
+similar to scRNA-seq convention.To distinguish between a feature (in a cell)
+having zero methylated CpGs vs not having CpG coverage at all (missing value),
+we check if the corresponding entry in \code{total} is zero as well.
+The \code{rownames} and \code{colnames} slots should store the feature and cell names,
+respectively. Covariates \code{X} that might explain variability in mean
+(methylation) should be stored in \verb{metadata(rowData(sce)X}.
+}
+\examples{
+# Extract
+sce <- scmet_to_sce(Y = scmet_dt$Y, X = scmet_dt$X)
+
+df <- sce_to_scmet(sce)
+
 }
 \seealso{
 \code{\link{scmet}}, \code{\link{scmet_differential}},

@@ -5,14 +5,14 @@
 #' SCE object to store single cell methylation data is the following. We
 #' create two sparse assays, `met` storing methylated CpGs and `total` storing
 #' total number of CpGs. Rows correspond to features and columns to cells,
-#' similar to scRNA-seq convention. To distinguish between a feature
-#' (in a cell) having zero methylated CpGs vs not having CpG coverage at all
-#' (missing value), we set the missing values to -1. The `rownames` and
-#' `colnames` slots should store the feature and cell names, respectively.
-#' Covariates `X` that might explain variability in mean (methylation)
-#' should be stored in `sce@metadata$X`.
+#' similar to scRNA-seq convention.To distinguish between a feature (in a cell)
+#' having zero methylated CpGs vs not having CpG coverage at all (missing value),
+#' we check if the corresponding entry in `total` is zero as well.
+#' The `rownames` and `colnames` slots should store the feature and cell names,
+#' respectively. Covariates `X` that might explain variability in mean
+#' (methylation) should be stored in `metadata(rowData(sce)X`.
 #'
-#' @param sce SingleCellExperiment object
+#' @param sce SummarizedExperiment object
 #'
 #' @return A named list containing the matrix Y (methylation data in format
 #' required by the `scmet` function) and the covariates X.
@@ -21,39 +21,45 @@
 #'   \code{\link{scmet_hvf_lvf}}
 #'
 #' @author C.A.Kapourani \email{C.A.Kapourani@@ed.ac.uk}
+#'
+#' @examples
+#' # Extract
+#' sce <- scmet_to_sce(Y = scmet_dt$Y, X = scmet_dt$X)
+#'
+#' df <- sce_to_scmet(sce)
+#'
 #' @export
 sce_to_scmet <- function(sce) {
   Feature = Cell <- NULL
   # Extract methylated and total reads
-  met <- SummarizedExperiment::assay(sce, "met") %>%
-    base::as.matrix() %>%
-    data.table::as.data.table()
-  total <- SummarizedExperiment::assay(sce, "total") %>%
-    base::as.matrix() %>%
-    data.table::as.data.table()
+  met <- SummarizedExperiment::assay(sce, "met") |>
+    base::as.matrix()
+  total <- SummarizedExperiment::assay(sce, "total") |>
+    base::as.matrix()
 
   # Convert missing values to NAs
-  met[met == -1] <- NA
-  total[total == -1] <- NA
+  idx <- which(total == 0)
+  met[idx] <- NA
+  total[idx] <- NA
 
   met <- data.table::data.table(Feature = rownames(sce), met)
   total <- data.table::data.table(Feature = rownames(sce), total)
 
   met <- data.table::melt(met, id.vars = "Feature",
-                          measure.vars = colnames(sce)) %>%
+                          measure.vars = colnames(sce)) |>
     stats::na.omit()
   total <- data.table::melt(total, id.vars = "Feature",
-                            measure.vars = colnames(sce)) %>%
+                            measure.vars = colnames(sce)) |>
     stats::na.omit()
 
   colnames(met) <- c("Feature", "Cell", "met_reads")
   colnames(total) <- c("Feature", "Cell", "total_reads")
 
   # Create final methylation data object Y
-  Y <- cbind(total, data.table(met_reads = met$met_reads))
+  Y <- cbind(total, data.table::data.table(met_reads = met$met_reads))
   Y <- Y[order(Feature, Cell), , drop = FALSE]
   # Extract covariates X
-  X <- sce@metadata$X
+  X <- S4Vectors::metadata(SummarizedExperiment::rowData(sce))$X
   return(list(Y = Y, X = X))
 }
 
@@ -67,7 +73,7 @@ sce_to_scmet <- function(sce) {
 #' cells, similar to scRNA-seq convention. The `rownames` and `colnames` slots
 #' should store the feature and cell names, respectively. Covariates `X`
 #' that might explain variability in mean (methylation) should be stored
-#' in `sce@metadata$X`.
+#' in `metadata(rowData(sce)$X`.
 #'
 #' @param Y Methylation data in data.table format.
 #' @param X (Optional) Matrix of covariates.
@@ -78,18 +84,23 @@ sce_to_scmet <- function(sce) {
 #'   \code{\link{scmet_hvf_lvf}}
 #'
 #' @author C.A.Kapourani \email{C.A.Kapourani@@ed.ac.uk}
+#'
+#' @examples
+#' # Extract
+#' sce <- scmet_to_sce(Y = scmet_dt$Y, X = scmet_dt$X)
+#'
 #' @export
 scmet_to_sce <- function(Y, X = NULL) {
   # First we create a wide format for methylated cpgs
   met_Y <- Y[, c("Feature", "Cell", "met_reads")]
   met_Y <- data.table::dcast(met_Y, Feature ~ Cell, value.var = "met_reads")
-  # NAs are set to -1
-  met_Y[is.na(met_Y)] <- -1
+  # NAs are set to 0
+  met_Y[is.na(met_Y)] <- 0
 
   # Next we create a wide format for total cpgs
   tot_Y <- Y[, c("Feature", "Cell", "total_reads")]
   tot_Y <- data.table::dcast(tot_Y, Feature ~ Cell, value.var = "total_reads")
-  tot_Y[is.na(tot_Y)] <- -1
+  tot_Y[is.na(tot_Y)] <- 0
 
   # Extract cell and feature names
   feature_names <- tot_Y$Feature
@@ -107,8 +118,15 @@ scmet_to_sce <- function(Y, X = NULL) {
   base::rownames(met) <- feature_names
   base::colnames(met) <- cell_names
 
-  sce <- SingleCellExperiment::SingleCellExperiment(list(met = met, total = total),
-                              metadata = list(X = X)
+  # Add covariate information
+  if (is.null(X)) {
+    X <- matrix(1, nrow = length(feature_names), ncol = 1)
+    rownames(X) <- feature_names
+  }
+  row_data <- S4Vectors::DataFrame(feature_names)
+  S4Vectors::metadata(row_data)$X <- X
+  sce <- SingleCellExperiment::SingleCellExperiment(
+    assays = list(met = met, total = total), rowData = row_data
   )
   return(sce)
 }
@@ -129,6 +147,11 @@ scmet_to_sce <- function(Y, X = NULL) {
 #'   \code{\link{scmet_hvf_lvf}}
 #'
 #' @author C.A.Kapourani \email{C.A.Kapourani@@ed.ac.uk}
+#'
+#' @examples
+#' # Extract
+#' H <- create_design_matrix(L = 4, X = scmet_dt$X)
+#'
 #' @export
 create_design_matrix <- function(L, X, c = 1.2) {
   H <- .rbf_design_matrix(L = L, X = X, c = c)
@@ -190,7 +213,6 @@ create_design_matrix <- function(L, X, c = 1.2) {
     W <- c(solve.qr(qx, y)) # Compute (H'H)^(-1)H'y
   }else{
     I <- diag(1, NCOL(H))   # Identity matrix
-    # TODO: Should we do this or not for the bias term??
     # I[1,1]  <- 1e-10  # Do not change the intercept coefficient
     qx <- qr(lambda * I + t(H) %*% H) # Compute QR decomposition
     W <- c(solve.qr(qx, t(H) %*% y))  # Comp (lambda*I+H'H)^(-1)H'y

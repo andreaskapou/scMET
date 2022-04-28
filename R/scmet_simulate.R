@@ -27,10 +27,6 @@
 #'   of cells per feature.
 #' @param cpgs_range Range (betwen 0 and 1) to randomly (sub)sample the number
 #'   of CpGs per cell and feature.
-#' @param seed The seed for random number generation.
-#' @param call_from_sim_diff Logical, whether the function was called from
-#'   within the \code{\link{scmet_simulate_diff}} function. Should be set to
-#'   FALSE always.
 #'
 #' @importFrom logitnorm rlogitnorm
 #' @return A simulated dataset and additional information for reproducibility
@@ -44,15 +40,9 @@
 scmet_simulate <- function(N_feat = 100, N_cells = 50, N_cpgs = 15, L = 4,
                            X = NULL, w_mu = c(-0.5, -1.5), s_mu = 1,
                            w_gamma = NULL, s_gamma = 0.3, rbf_c = 1,
-                           cells_range = c(0.4, 0.8), cpgs_range = c(0.4, 0.8),
-                           seed = NULL, call_from_sim_diff = FALSE) {
+                           cells_range = c(0.4, 0.8), cpgs_range = c(0.4, 0.8)) {
   # So RMD check does not complain
   Feature <- NULL
-  # If we haven't provided any seed, set only randomly
-  if (!call_from_sim_diff) {
-    if (is.null(seed)) { seed <- sample.int(.Machine$integer.max, 1) }
-    set.seed(seed)
-  }
 
   # Parameter checks
   if (is.null(L)) { L <- 4 }
@@ -95,7 +85,7 @@ scmet_simulate <- function(N_feat = 100, N_cells = 50, N_cpgs = 15, L = 4,
                        s_gamma = s_gamma)
   opts <- list(N_feat = N_feat, N_cells = N_cells, N_cpgs = N_cpgs, L = L,
                rbf_c = rbf_c, cells_range = cells_range,
-               cpgs_range = cpgs_range, seed = seed)
+               cpgs_range = cpgs_range)
   obj <- structure(list(Y = Y, X = X, theta_true = theta,
                         theta_priors_true = theta_priors, opts = opts),
                    class = "scmet_simulate")
@@ -137,11 +127,7 @@ scmet_simulate_diff <- function(N_feat = 100, N_cells = 50, N_cpgs = 15, L = 4,
                                 X = NULL, w_mu = c(-.5, -1.5), s_mu = 1,
                                 w_gamma = NULL, s_gamma = 0.3, rbf_c = 1,
                                 cells_range = c(0.4, 0.8),
-                                cpgs_range = c(0.4, 0.8), seed = NULL) {
-
-  # If we haven't provided any seed, set only randomly
-  if (is.null(seed)) { seed <- sample.int(.Machine$integer.max, 1) }
-  set.seed(seed)
+                                cpgs_range = c(0.4, 0.8)) {
 
   # Parameter checks
   if (is.null(L)) { L <- 4 }
@@ -159,8 +145,7 @@ scmet_simulate_diff <- function(N_feat = 100, N_cells = 50, N_cpgs = 15, L = 4,
   sim_dt_A <- scmet_simulate(N_feat = N_feat, N_cells = N_cells, N_cpgs = N_cpgs,
                              L = L, X = X, w_mu = w_mu, s_mu = s_mu,
                              w_gamma = w_gamma, s_gamma = s_gamma, rbf_c = rbf_c,
-                             cells_range = cells_range, cpgs_range = cpgs_range,
-                             call_from_sim_diff = TRUE)
+                             cells_range = cells_range, cpgs_range = cpgs_range)
 
   cat("Simulating from group B\n")
   # Generate total number of CpGs per feature and cell for group B
@@ -273,8 +258,7 @@ scmet_simulate_diff <- function(N_feat = 100, N_cells = 50, N_cpgs = 15, L = 4,
   # Options for the differential analysis
   opts <- list(diff_feat_prcg_mu = diff_feat_prcg_mu,
                diff_feat_prcg_gamma = diff_feat_prcg_gamma,
-               OR_change_mu = OR_change_mu, OR_change_gamma = OR_change_gamma,
-               seed = seed)
+               OR_change_mu = OR_change_mu, OR_change_gamma = OR_change_gamma)
   obj <- structure(list(scmet_dt_A = sim_dt_A, scmet_dt_B = sim_dt_B,
                         opts = opts, diff_var_features = diff_var_feat,
                         diff_var_features_up = diff_var_feat_up,
@@ -366,21 +350,27 @@ scmet_simulate_diff <- function(N_feat = 100, N_cells = 50, N_cpgs = 15, L = 4,
   #         parameter with feature_names.
   if (is.null(feature_names)) {
     Y <- data.table::data.table(
-      "Feature" = unlist(sapply(seq_len(N_feat), function(n)
-        rep(paste0("Feature_", n), length(cpgs_list[[n]])))),
-      "Cell" = unlist(sapply(seq_len(N_feat), function(n) {
-        cell_id <- sample(N_cells, length(cpgs_list[[n]]))
-        paste0("Cell_", cell_id)
-      }) ) )
+      "Feature" = unlist(lapply(
+        X = seq_len(N_feat),
+        FUN = function(n) rep(paste0("Feature_", n), length(cpgs_list[[n]])))),
+      "Cell" = unlist(lapply(
+        X = seq_len(N_feat),
+        FUN = function(n) {
+          cell_id <- sample(N_cells, length(cpgs_list[[n]]))
+          paste0("Cell_", cell_id)
+          }) ) )
   }
   else {
     Y <- data.table::data.table(
-      "Feature" = unlist(sapply(seq_len(N_feat), function(n)
-        rep(feature_names[n], length(cpgs_list[[n]])))),
-      "Cell" = unlist(sapply(seq_len(N_feat), function(n) {
-        cell_id <- sample(N_cells, length(cpgs_list[[n]]))
-        paste0("Cell_", cell_id)
-      }) ) )
+      "Feature" = unlist(lapply(
+        X = seq_len(N_feat),
+        FUN = function(n) rep(feature_names[n], length(cpgs_list[[n]])))),
+      "Cell" = unlist(lapply(
+        X = seq_len(N_feat),
+        FUN = function(n) {
+          cell_id <- sample(N_cells, length(cpgs_list[[n]]))
+          paste0("Cell_", cell_id)
+          }) ) )
   }
   Y[, c("total_reads", "met_reads") :=
       list(unlist(cpgs_list), unlist(met_cpgs_list)) ]

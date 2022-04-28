@@ -16,9 +16,7 @@ scmet_simulate(
   s_gamma = 0.3,
   rbf_c = 1,
   cells_range = c(0.4, 0.8),
-  cpgs_range = c(0.4, 0.8),
-  seed = NULL,
-  call_from_sim_diff = FALSE
+  cpgs_range = c(0.4, 0.8)
 )
 }
 \arguments{
@@ -55,12 +53,6 @@ of cells per feature.}
 
 \item{cpgs_range}{Range (betwen 0 and 1) to randomly (sub)sample the number
 of CpGs per cell and feature.}
-
-\item{seed}{The seed for random number generation.}
-
-\item{call_from_sim_diff}{Logical, whether the function was called from
-within the \code{\link{scmet_simulate_diff}} function. Should be set to
-FALSE always.}
 }
 \value{
 A simulated dataset and additional information for reproducibility

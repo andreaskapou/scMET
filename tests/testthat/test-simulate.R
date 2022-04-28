@@ -1,7 +1,8 @@
 context("Simulating synthetic data")
 
 test_that("Simulate single population works", {
-  dt <- scmet_simulate(N_feat = 100, N_cells = 50, seed = 123)
+  set.seed(123)
+  dt <- scmet_simulate(N_feat = 100, N_cells = 50)
   expect_equal(NROW(dt$X), 100)
   expect_equal(NCOL(dt$Y), 4)
   expect_equal(dt$Y$total_reads[c(1, 6)], c(11, 7))
@@ -17,7 +18,8 @@ test_that("Simulate single population works", {
 })
 
 test_that("Simulate differential population works", {
-  dt <- scmet_simulate_diff(N_feat = 100, N_cells = 50, seed = 123)
+  set.seed(123)
+  dt <- scmet_simulate_diff(N_feat = 100, N_cells = 50)
   expect_equal(NROW(dt$scmet_dt_B$X), 100)
   expect_equal(NCOL(dt$scmet_dt_B$Y), 4)
   expect_equal(dt$scmet_dt_B$Y$total_reads[c(1, 6)], c(10, 11))

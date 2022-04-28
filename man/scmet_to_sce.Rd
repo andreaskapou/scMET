@@ -22,7 +22,12 @@ storing total number of CpGs. Rows correspond to features and columns to
 cells, similar to scRNA-seq convention. The \code{rownames} and \code{colnames} slots
 should store the feature and cell names, respectively. Covariates \code{X}
 that might explain variability in mean (methylation) should be stored
-in \code{sce@metadata$X}.
+in \verb{metadata(rowData(sce)$X}.
+}
+\examples{
+# Extract
+sce <- scmet_to_sce(Y = scmet_dt$Y, X = scmet_dt$X)
+
 }
 \seealso{
 \code{\link{scmet}}, \code{\link{scmet_differential}},

@@ -3,15 +3,8 @@
 \docType{package}
 \name{scMET-package}
 \alias{scMET-package}
-\alias{.datatable.aware}
 \title{\code{scMET}: Bayesian modelling of DNA methylation at single-cell
 resolution.}
-\format{
-An object of class \code{logical} of length 1.
-}
-\usage{
-.datatable.aware
-}
 \value{
 scMET main package documentation.
 }
@@ -32,4 +25,3 @@ package version 2.19.3. https://mc-stan.org
 \author{
 C.A.Kapourani \email{kapouranis.andreas@gmail.com}
 }
-\keyword{datasets}

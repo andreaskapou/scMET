@@ -2,7 +2,7 @@
 #'
 #' @description  Maximum Likelihood Estimate (MLE) of Beta-Binomial (BB) model.
 #'   Some details about this model can be found on the following tutorial
-#'   https://rpubs.com/cakapourani/beta-binomial
+#'   \url{https://rpubs.com/cakapourani/beta-binomial}
 #'
 #' @param x An n x 2 data.table or matrix, where 1st column keeps total number
 #'   of trials and 2nd column number of successes, n is the total number of
@@ -39,7 +39,7 @@
 #' @author C.A.Kapourani \email{C.A.Kapourani@@ed.ac.uk}
 #'
 #' @import data.table
-#' @import VGAM
+#' @importFrom VGAM vglm Coef dbetabinom.ab betabinomial
 #'
 #' @examples
 #' # Extract data from a single Feature
@@ -50,7 +50,7 @@
 bb_mle <- function(x, w = NULL, n_starts = 10, lower_thresh = 1e-3){
   # Ensure that x is a data.table object with 2 columns
   assertthat::assert_that(NCOL(x) == 2)
-  if (!is.data.table(x)) { x <- as.data.table(x) }
+  if (!data.table::is.data.table(x)) { x <- data.table::as.data.table(x) }
 
   is_binomial <- FALSE  # Assume that data follow a Beta-Binomial
   is_conv <- FALSE      # Assume we have no convergence
@@ -80,7 +80,6 @@ bb_mle <- function(x, w = NULL, n_starts = 10, lower_thresh = 1e-3){
       # Check if any parameter is ~0 or even negative, then probably we have
       # under-dispersion or the MM estimate has issues (e.g. different n_i).
       # This might cause problems and might not converge to ML estimate.
-      # TODO: Again, assume data coming from a Binomial distribution???
       if (any(w < lower_thresh)) { w[w < lower_thresh] <- lower_thresh }
       else {mu <- w[1] / sum(w) } # Compute mean from MM
     }
@@ -95,10 +94,8 @@ bb_mle <- function(x, w = NULL, n_starts = 10, lower_thresh = 1e-3){
       # Results of the vglm optimization are for \mu and \gamma
       mu <- VGAM::Coef(fit)[1]
       gamma <- VGAM::Coef(fit)[2]
-      # TODO: Sometimes this returns gamma == 1, just subtract a small value
       if (gamma > 1 - 1e-3) { gamma <- 1 - 1e-3 }
       if (mu > 1 - 1e-3) { mu <- 1 - 1e-3}
-      # TODO: Should we really need to to that???
       # Convert them to \alpha and \beta
       tmp <- (1 / gamma) - 1
       a <- mu * tmp
@@ -136,7 +133,6 @@ bb_mle <- function(x, w = NULL, n_starts = 10, lower_thresh = 1e-3){
           # Compute log-likelihood under these parameters
           est_ll <- .bb_lik(fit$w, x)
           if (est_ll >= best_ll) {
-            # TODO: Should we check if MLE mu change much from MM mu?
             mu <- fit$w[1] / sum(fit$w)  # MLE estimate of mu
             gamma <- 1 / (sum(fit$w) + 1)  # gamma = 1 / (\alpha + \beta + 1)
             a <- fit$w[1]     # MLE estimates of \alpha and \beta
@@ -199,10 +195,8 @@ bb_mle <- function(x, w = NULL, n_starts = 10, lower_thresh = 1e-3){
 
 
 # Fit Beta-Binomial model parameters using method of moments approach
-# see (https://en.wikipedia.org/wiki/Beta-binomial_distribution)
+# see \url{https://en.wikipedia.org/wiki/Beta-binomial_distribution}
 #
-# TODO: We do not take into accout different N for each sample, but we take
-# just the average N of all samples.
 #
 # @param n Vector of total number of trials per sample
 # @param k Vector of successes per subject
@@ -215,8 +209,6 @@ bb_mle <- function(x, w = NULL, n_starts = 10, lower_thresh = 1e-3){
   # Sample moment 2
   m2 <- sum(k^2) / size
   # Number of possible outputs of Binomial distribution.
-  # TODO: How to compute this N, mean(n) or max(n) or how??
-  # TODO: Why MM sometimes returns negative values, under-dispersion??
   N <- mean(n)
   a <- (N * m1 - m2) / (N * (m2 / m1 - m1 - 1) + m1)
   b <- (N - m1) * (N - m2 / m1) / (N * (m2 / m1 - m1 - 1) + m1)
@@ -238,7 +230,7 @@ bb_mle <- function(x, w = NULL, n_starts = 10, lower_thresh = 1e-3){
   w <- as.vector(w)
   assertthat::assert_that(w[1] > 0)
   assertthat::assert_that(w[2] > 0)
-  if (!is.data.table(x)) { x <- as.data.table(x) }
+  if (!data.table::is.data.table(x)) { x <- data.table::as.data.table(x) }
   # Compute NLL
   f <- sum(VGAM::dbetabinom.ab(x[[2]], x[[1]], shape1 = w[1], shape2 = w[2],
                                log = TRUE))
@@ -252,8 +244,6 @@ bb_mle <- function(x, w = NULL, n_starts = 10, lower_thresh = 1e-3){
 
 # Gradient of Beta-Binomial wrt to \alpha and \beta
 #
-# TODO: Check that this is right?
-#
 # @param w Vector with the values of \alpha and \beta to compute the gradient.
 # @param x An n x 2 matrix, where 1st column keeps total number of trials
 #  and 2nd column number of successes.
@@ -261,7 +251,7 @@ bb_mle <- function(x, w = NULL, n_starts = 10, lower_thresh = 1e-3){
 #   returned.
 #
 .bb_grad <- function(w, x, is_NLL = FALSE) {
-  if (!is.data.table(x)) { x <- as.data.table(x) }
+  if (!data.table::is.data.table(x)) { x <- data.table::as.data.table(x) }
   n <- nrow(x)       # sample size
   N <- x[[1]]        # Total number of trials
   K <- x[[2]]        # Number of successes
@@ -287,7 +277,7 @@ bb_mle <- function(x, w = NULL, n_starts = 10, lower_thresh = 1e-3){
 # @param is_NLL Logical, indicating if the Negative Log Likelihood should be
 #  returned.
 .bb_hessian <- function(w, x, is_NLL = FALSE) {
-  if (!is.data.table(x)) { x <- as.data.table(x) }
+  if (!data.table::is.data.table(x)) { x <- data.table::as.data.table(x) }
   n <- nrow(x)       # sample size
   N <- x[[1]]        # Total number of trials
   K <- x[[2]]        # Number of successes

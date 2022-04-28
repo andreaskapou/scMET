@@ -110,12 +110,10 @@ scmet_differential <- function(obj_A, obj_B, psi_m = log(1.5), psi_e = log(1.5),
   ##
   # Initial value checks
   ##
-  if (!(methods::is(obj_A, "scmet_mcmc") ||
-        methods::is(obj_A, "scmet_vb")) ) {
+  if (!inherits(obj_A, c("scmet_mcmc", "scmet_vb"))) {
     stop("Posterior object is not generated from scMET.")
   }
-  if (!(methods::is(obj_B, "scmet_mcmc") ||
-        methods::is(obj_B, "scmet_vb")) ) {
+  if (!inherits(obj_B, c("scmet_mcmc", "scmet_vb"))) {
     stop("Posterior object is not generated from scMET.")
   }
 
@@ -295,7 +293,7 @@ scmet_differential <- function(obj_A, obj_B, psi_m = log(1.5), psi_e = log(1.5),
 
   # Features with no change in mean methylation
   not_dm <- res_diff_mu == "NoDiff"
-  # Genes to calibrate EFDR
+  # Features to calibrate EFDR
   feat_mu_diff <- not_dm & features_selected_gamma
 
   # Search optimal threshold to identify changes in mean between groups
@@ -408,7 +406,7 @@ scmet_differential <- function(obj_A, obj_B, psi_m = log(1.5), psi_e = log(1.5),
           "-------------------------------------------------------------\n\n",
           "-------------------------------------------------------------\n",
           n_gamma_high_A + n_gamma_high_B,
-          " genes with a change in over-dispersion:\n",
+          " features with a change in over-dispersion:\n",
           "- Higher dispersion in ", group_label_A,
           " samples: ", n_gamma_high_A,"\n",
           "- Higher dispersion in ", group_label_B,
@@ -418,12 +416,12 @@ scmet_differential <- function(obj_A, obj_B, psi_m = log(1.5), psi_e = log(1.5),
           "- EFDR = ", round(100 * opt_evidence_thresh_g[2], 2), "% \n",
           "- EFNR = ", round(100 * opt_evidence_thresh_g[3], 2), "% \n",
           "NOTE: differential dispersion assessment only applied to the \n",
-          sum(not_dm), " genes for which the mean did not change \n",
+          sum(not_dm), " features for which the mean did not change \n",
           "and that were included for testing. \n",
           "--------------------------------------------------------------\n",
           "-------------------------------------------------------------\n",
           n_epsilon_high_A + n_epsilon_high_B,
-          " genes with a change in residual over dispersion:\n",
+          " features with a change in residual over dispersion:\n",
           "- Higher residual dispersion in ", group_label_A,
           " samples: ", n_epsilon_high_A,"\n",
           "- Higher residual dispersion in ", group_label_B,

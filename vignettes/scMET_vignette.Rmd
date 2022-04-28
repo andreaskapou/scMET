@@ -42,15 +42,8 @@ opts_chunk$set(error = FALSE, message = TRUE, warning = FALSE)
 #opts_chunk$set(fig.asp = 1)
 ```
 
-# Installation
-```{r installation, echo=TRUE, eval=FALSE}
-## Install from Github repository
-# install.packages("devtools")
-devtools::install_github("andreaskapou/scMET")
-```
-
-
-# Background
+ 
+# Introduction
 High throughput measurements of DNA methylomes at single-cell resolution are a promising resource to quantify the heterogeneity of DNA methylation and uncover its role in gene regulation. However, limitations of the technology result in sparse CpG coverage, effectively posing challenges to robustly quantify genuine DNA methylation heterogeneity. Here we introduce __scMET__, a Bayesian framework for the analysis of single-cell DNA methylation data. This modelling approach combines a hierarchical beta-binomial specification with a generalised linear model framework with the aim of capturing biological overdispersion and overcome data sparsity by sharing information across cells and genomic features.
 
 To disentangle technical from biological variability and overcome data sparsity, scMET couples a hierarchical BB model with a GLM framework (Fig.\@ref(fig:scmet)a-b). For each cell $i$ and region $j$, the input for scMET is the number of CpG sites that are observed to be methylated ($Y_{ij}$) and the total number of sites for which methylation status was recorded ($n_{ij}$). The BB model uses feature-specific mean parameters $\mu_j$ to quantify overall DNAm across all cells and biological _overdispersion_ parameters $\gamma_j$ as a proxy for cell-to-cell DNAm heterogeneity. These parameters capture the amount of variability that is not explained by binomial sampling noise, which would only account for technical variation.
@@ -61,6 +54,21 @@ The GLM framework is incorporated at two levels. Firstly, to introduce feature-s
 knitr::include_graphics("../inst/figures/scmet-motivation.png")
 ```
 
+
+# Installation
+```{r installation, echo=TRUE, eval=FALSE}
+# Install stable version from Bioconductor
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("scMET")
+
+## Or development version from Github
+# install.packages("remotes")
+remotes::install_github("andreaskapou/scMET")
+```
+
+
 # scMET analysis on synthetic data
 To highlight the main functionality of `scMET` we first apply it on synthetic data, where we can assess the accuracy of the inferred parameters ($\mu$ and $\gamma$) as well as compare it with the maximum likelihood estimation of simple beta-binomial (BB-MLE) model. 
 
@@ -68,12 +76,11 @@ To highlight the main functionality of `scMET` we first apply it on synthetic da
 # Load package
 suppressPackageStartupMessages(library(scMET))
 suppressPackageStartupMessages(library(data.table))
-suppressPackageStartupMessages(library(magrittr))
 set.seed(123)
 ```
 
 ## Loading synthetic data
-scMET comes with simulated scBS-seq data from a single population. The users can generate their own synthetic data using the `scmet_simulate` function. __NOTE__ For Interoperability of scMET and `SingleCellExperiment` objects see last section of this vignette.
+scMET comes with simulated scBS-seq data from a single population. The users can generate their own synthetic data using the `scmet_simulate` function. __NOTE__ For interoperability of scMET and `SingleCellExperiment` objects see last section of this vignette.
 
 ```{r load_data}
 # Synthetic data: list with following elements
@@ -89,7 +96,7 @@ Next, `X` is a matrix containing the feature-specific covariates that might expl
 ```{r}
 head(scmet_dt$X)
 ```
-
+ 
 The `theta_true` element just contains the true $\mu$ and $\gamma$ parameters used to generate the scBS-seq data `Y`. We will use these to assess our prediction performance later. Finally the `theta_priors_true` contains the prior hyper-parameters which we defined to generate the synthetic data (top level parameters in Fig.\@ref(fig:scmet)).
 ```{r}
 # Parameters \mu and \gamma
@@ -109,7 +116,7 @@ plot(scmet_dt$X[,2], scmet_dt$theta_true$mu, pch = 20,
      ylab = expression(paste("Mean methylation ",  mu)))
 ```
 
-## scMET inference
+## scMET inference 
 Now we can perform inference on the simulated data using the `scmet` function. In addition to providing the input data `Y` and covariates `X`, we set `L = 4` radial basis functions to model the mean-overdispersion relationship. Also, we set the total number of VB iterations to `iter = 500` for efficiency purposes (hence the model will most probably not converge and which can be seen by the fitted lines being further away than expected). We let all the other parameters as default.
 
 __NOTE 1__ The user should set this to a much higher value, e.g. around 20,000 when running VB so the model converges.
@@ -119,7 +126,7 @@ __NOTE 2__ For relatively small datasets we recommend using the MCMC implementat
 ```{r run_scmet_synthetic, warning=FALSE, message=FALSE}
 # Run with seed for reproducibility
 fit_obj <- scmet(Y = scmet_dt$Y, X = scmet_dt$X, L = 4,
-                 iter = 500, seed = 12)
+                 iter = 1500, seed = 12)
 ```
 
 
@@ -129,7 +136,7 @@ The `scmet` returns a `scmet_<mode>` object (mode either `vb` or `mcmc`) with th
 class(fit_obj)
 names(fit_obj)
 ```
-Here the most important entry is the `posterior` slot, which is a list containing the posterior draws for each of the model parameters. All other slots contain the input data and initialised hyper-parameter values for reproducibility purposes. 
+Here the most important entry is the `posterior` entry, which is a list containing the posterior draws for each of the model parameters. All other elements contain the input data and initialised hyper-parameter values for reproducibility purposes. 
 ```{r}
 # Elements of the posterior list
 names(fit_obj$posterior)
@@ -149,7 +156,7 @@ fit_obj$posterior$w_mu[1:5, ]
 fit_obj$posterior$w_gamma[1:5, ]
 ```
 
-## Plotting mean-overdispersion relationship
+## Plotting mean-overdispersion relationship 
 Next we plot the posterior median parameter estimates of $\mu$ and $\gamma$ together with the fitted non-linear trend. The color code is used to represent areas with high (green and yellow) and low (blue) concentration of features via kernel density estimation. Mostly useful when visualising datasets with large number of features.
 ```{r mean_var_plot1, fig.wide = TRUE}
 gg1 <- scmet_plot_mean_var(obj = fit_obj, y = "gamma", 
@@ -178,8 +185,9 @@ cowplot::plot_grid(gg1, gg2, ncol = 2)
 Below we assess the predictive performance of scMET compared to the maximum likelihood estimates from a beta-binomial model. First we obtain MLE estimates:
 ```{r, warning=FALSE, message=FALSE}
 # Obtain MLE estimates by calling the bb_mle function
-bbmle_fit <- scmet_dt$Y[, bb_mle(cbind(total_reads, met_reads))
-                      [c("mu", "gamma")], by = c("Feature")]
+bbmle_fit <- scmet_dt$Y[, bb_mle(cbind(total_reads, met_reads)), 
+                        by = c("Feature")]
+bbmle_fit <- bbmle_fit[, c("Feature", "mu", "gamma")]
 head(bbmle_fit)
 ```
 
@@ -187,16 +195,16 @@ As we can see, scMET can more accurately estimate the overdispersion parameter $
 ```{r, fig.width=6, fig.height=4, fig.wide = TRUE, warning=FALSE, message=FALSE}
 # Overdispersion estimates MLE vs scMET
 # subset of features to avoid over-plotting
-plot(scmet_plot_estimated_vs_true(obj = fit_obj, sim_dt = scmet_dt, 
-                                  param = "gamma", mle_fit = bbmle_fit))
+scmet_plot_estimated_vs_true(obj = fit_obj, sim_dt = scmet_dt, 
+                             param = "gamma", mle_fit = bbmle_fit)
 ```
 
 The above sections mostly focused on assessing the prediction performance of scMET. Below we show how the user can use scMET for downstream analyses, such as feature selection and differential methylation testing.
 
 ## Identifying highly variable features
 After fitting the scMET model, we now show how to perform feature selection; that is to identify highly variable features (HVF) which potentially drive cell-to-cell DNA methylation heterogeneity. We will identify HVFs based on the residual overdispersion estimates $\epsilon$ (This is the default and recommended approach of scMET. The user can also perform HVF analysis based on the overdispersion parameter $\gamma$, which however will be confounded by the mean methylation levels).
-
-We can perform HVF analysis simply by calling the `scmet_hvf` function. This will create a new slot named `hvf` within the `fit_obj` object.
+ 
+We can perform HVF analysis simply by calling the `scmet_hvf` function. This will create a new list named `hvf` within the `fit_obj` object.
 ```{r, warning=FALSE}
 # Run HVF analysis
 fit_obj <- scmet_hvf(scmet_obj = fit_obj, delta_e = 0.75, 
@@ -210,7 +218,7 @@ Here the `tail_prob` column denotes the evidence our model provides of a feature
 
 Below we show the grid search to obtain the optimal posterior evidence threshold to achieve EFDR = 10%.
 ```{r, fig.width=6, fig.height=3, fig.wide = TRUE}
-plot(scmet_plot_efdr_efnr_grid(obj = fit_obj, task = "hvf"))
+scmet_plot_efdr_efnr_grid(obj = fit_obj, task = "hvf")
 ```
 
 Next we can also plot the corresponding __tail posterior probabilities__ as a function of $\mu$ and plot the mean - overdispersion relationship coloured by the HVF analysis.
@@ -231,7 +239,7 @@ To perform differential testing, scMET contains simulated data from two conditio
 names(scmet_diff_dt)
 ```
 
-Below we plot the mean-overdispersion relationship of the _true_ parameters for each group, and highlight with red colour the features that are truly __differentially variable__ in group B compared to group A.
+Below we plot the mean-overdispersion relationship of the _true_ parameters for each group, and highlight with red colour the features that are truly __differentially variable__ in group B compared to group A. 
 ```{r, fig.wide = TRUE}
 # Extract DV features
 dv <- scmet_diff_dt$diff_var_features$feature_idx
@@ -254,7 +262,7 @@ points(theta_B$mu[dv], theta_B$gamma[dv], col = "red", pch = 20)
 ```
 
 
-The `scmet_dt_A` and `scmet_dt_B` are the two simulated datasets, having the same structure as the `scmet_dt` object in the above sections. The additional slots contain information about which featurers are DM or DV across populations.
+The `scmet_dt_A` and `scmet_dt_B` are the two simulated datasets, having the same structure as the `scmet_dt` object in the above sections. The additional elements contain information about which features are DM or DV across populations.
 
 ### Fitting scMET for each group
 To perform differential analysis, we first need to run the `scmet` function on each dataset/group independently.
@@ -266,11 +274,11 @@ __NOTE 2__ For relatively small datasets we recommend using the MCMC implementat
 # Run scMET for group A
 fit_A <- scmet(Y = scmet_diff_dt$scmet_dt_A$Y,
                X = scmet_diff_dt$scmet_dt_A$X, L = 4, 
-               iter = 500, seed = 12)
+               iter = 1000, seed = 12)
 # Run scMET for group B
 fit_B <- scmet(Y = scmet_diff_dt$scmet_dt_B$Y,
                X = scmet_diff_dt$scmet_dt_B$X, L = 4, 
-               iter = 500, seed = 12)
+               iter = 1000, seed = 12)
 ```
 
 Showing mean - overdispersion plots for each group
@@ -294,7 +302,7 @@ diff_obj <- scmet_differential(obj_A = fit_A, obj_B = fit_B,
                                group_label_B = "B")
 ```
 
-__NOTE__ sometimes the method returns a message that it could not obtain an acceptable evidence threshold to achieve EFDR = 5%. Then by by default the evidence threshold is set to the initial value. This does __not__ mean though that the test failed.
+__NOTE__ sometimes the method returns a message that it could not obtain an acceptable evidence threshold to achieve EFDR = 5%. Then by by default the evidence threshold is set to the initial value. This does __not__ mean though that the test failed. 
 
 The `diff_obj` stores all the differential analysis information in the following structure:
 ```{r}
@@ -303,18 +311,18 @@ class(diff_obj)
 names(diff_obj)
 ```
 
-The `diff_<mode>_summary`slots contain the summary of the differential analysis, whereas the `diff_<mode>_thresh` slots contain information about the optimal posterior evidence threshold search to achieve the required EFDR.
+The `diff_<mode>_summary` entries contain the summary of the differential analysis, whereas the `diff_<mode>_thresh` slots contain information about the optimal posterior evidence threshold search to achieve the required EFDR.
 ```{r}
 # DM results
 head(diff_obj$diff_mu_summary)
 # Summary of DMs
-as.data.table(diff_obj$diff_mu_summary) %>%
-  .[, .N, by = "mu_diff_test"]
+diff_obj$diff_mu_summary |> 
+        dplyr::count(mu_diff_test)
 # DV (based on epsilon) results
 head(diff_obj$diff_epsilon_summary)
 # Summary of DVs
-as.data.table(diff_obj$diff_epsilon_summary) %>%
-  .[, .N, by = "epsilon_diff_test"]
+diff_obj$diff_epsilon_summary |> 
+  dplyr::count(epsilon_diff_test)
 ```
 
 
@@ -329,9 +337,9 @@ cowplot::plot_grid(gg1, gg2, ncol = 2)
 Below we show volcano plots for DM and DV analysis. Red and green colours correspond to features that are more methylated or variable in group A and group B, respectively.
 ```{r, fig.width=6, fig.height=4, fig.wide = TRUE}
 # DM volcano plot
-plot(scmet_plot_volcano(diff_obj, task = "diff_mu"))
+scmet_plot_volcano(diff_obj, task = "diff_mu")
 # DV based on epsilon volcano plot
-plot(scmet_plot_volcano(diff_obj, task = "diff_epsilon"))
+scmet_plot_volcano(diff_obj, task = "diff_epsilon")
 ```
 
 
@@ -349,7 +357,7 @@ In this section we show the ability to convert between scMET objects and `Single
 
 `SingleCellExperiment` is a class for storing single-cell experiment data used by many Bioconductor analysis packages. To the best of our knowledge there is no standard format for storing scBS-seq data. However, to ease analysis pipeline with scMET for users with experience in Bioconductor we provide helper functions for converting between those formats. 
 
-The structure of the SCE object to store scBS-seq data is as follows. We create two assays, `met` storing methylated CpGs and `total` storing total number of CpGs. Rows correspond to features and columns to cells, similar to scRNA-seq convention. To distinguish between a feature (in a cell) having zero methylated CpGs vs not having CpG coverage at all (missing value), we set the missing values to -1. The `rownames` and `colnames` slots should store the feature and cell names, respectively. Covariates `X` that might explain variability in mean (methylation) should be stored in `sce@metadata$X`.
+The structure of the SCE object to store scBS-seq data is as follows. We create two assays, `met` storing methylated CpGs and `total` storing total number of CpGs. Rows correspond to features and columns to cells, similar to scRNA-seq convention. To distinguish between a feature (in a cell) having zero methylated CpGs vs not having CpG coverage at all (missing value), we check if the corresponding entry in `total` is zero as well. Next `rownames` and `colnames` should store the feature and cell names, respectively. Covariates `X` that might explain variability in mean (methylation) should be stored in `metadata(rowData(sce))$X`.
 
 Below we show an example of converting between these formats. First we create a copy of the synthetic data and sort also by the `Cell` column.
 

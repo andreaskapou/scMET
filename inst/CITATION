@@ -6,8 +6,9 @@ bibentry(
         person(c("Guido"), "Sanguinetti"),
         person(c("Catalina A."), "Vallejos")
     ),
-    title="scMET: Bayesian modelling of DNAmethylation heterogeneity at single-cell resolution",
-    journal="bioRxiv",
-    year="2020",
-    doi = "10.1101/2020.07.10.196816"
+    title="scMET: Bayesian modelling of DNA methylation heterogeneity at single-cell resolution",
+    journal="Genome biology",
+    year="2021",
+    volume = "22",
+	  number = "1"
 )

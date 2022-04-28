@@ -19,15 +19,15 @@
 #' @import methods
 #' @import Rcpp BiocStyle rstantools
 #' @importFrom rstan sampling vb
+#' @importFrom dplyr count
+#' @importFrom S4Vectors metadata
 #' @importFrom cowplot plot_grid
 #' @importFrom RcppParallel RcppParallelLibs CxxFlags
-#' @rawNamespace importFrom(magrittr,"%>%")
 #' @rawNamespace importFrom(data.table,":=")
 #'
 #' @references Stan Development Team (2020). RStan: the R interface to Stan. R
 #'   package version 2.19.3. https://mc-stan.org
 #'
-.datatable.aware <- TRUE
 NULL
 
 .onLoad <- function(libname = find.package("scMET"), pkgname = "scMET"){

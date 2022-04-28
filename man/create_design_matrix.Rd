@@ -20,6 +20,11 @@ A design matrix object H.
 Generic function for crating a radial basis function (RBF)
 design matrix for input vector X.
 }
+\examples{
+# Extract
+H <- create_design_matrix(L = 4, X = scmet_dt$X)
+
+}
 \seealso{
 \code{\link{scmet}}, \code{\link{scmet_differential}},
 \code{\link{scmet_hvf_lvf}}

@@ -1,13 +1,16 @@
 Package: scMET
 Type: Package
 Title: Bayesian modelling of cell-to-cell DNA methylation heterogeneity
-Version: 0.99.4
+Version: 0.99.5
 Authors@R: 
-    person(given = "Andreas C.",
+    c(person(given = "Andreas C.",
            family = "Kapourani",
            role = c("aut", "cre"),
            email = "kapouranis.andreas@gmail.com",
-           comment = c(ORCID = "0000-0003-2303-1953"))
+           comment = c(ORCID = "0000-0003-2303-1953")),
+      person(given = "John",
+           family = "Riddell",
+           role = c("ctb")))
 Description: High-throughput single-cell measurements of DNA methylomes can 
     quantify methylation heterogeneity and uncover its role in gene regulation. 
     However, technical limitations and sparse coverage can preclude this task. 
@@ -19,14 +22,15 @@ Description: High-throughput single-cell measurements of DNA methylomes can
     scMET facilitates the characterization of epigenetically distinct cell 
     populations and how it enables the formulation of novel hypotheses on the 
     epigenetic regulation of gene expression.
-License: GPL-3 | file LICENSE
+License: GPL-3
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.2
 Biarch: true
+BugReports: https://github.com/andreaskapou/scMET/issues
 Depends: 
-    R (>= 4.1.0)
+    R (>= 4.2.0)
 Imports: 
     methods,
     Rcpp (>= 1.0.0),
@@ -35,7 +39,6 @@ Imports:
     rstantools (>= 2.1.0),
     VGAM,
     data.table,
-    magrittr,
     MASS,
     logitnorm,
     ggplot2,
@@ -48,7 +51,9 @@ Imports:
     stats,
     SummarizedExperiment,
     SingleCellExperiment,
-    Matrix
+    Matrix,
+    dplyr,
+    S4Vectors
 Suggests: 
     testthat,
     knitr,

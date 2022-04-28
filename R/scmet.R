@@ -145,9 +145,9 @@ scmet <- function(Y, X = NULL, L = 4, use_mcmc = FALSE, use_eb = TRUE,
   if (use_eb) {
     cat(date(), ": Using EB to set model priors.\n")
 
-    # TODO:
-    # For efficiency, subsample features, since we just want a broad prior.
+    # For efficiency, we should subsample features, since we just want a broad prior.
     # Also, keep only those features for which we could compute the MLE?
+
     # For each feature compute MLE or MM estimates of BB
     bb_mle_fit <- Y[, bb_mle(cbind(total_reads, met_reads))[c("gamma", "mu")],
                     by = c("Feature")]
@@ -180,9 +180,6 @@ scmet <- function(Y, X = NULL, L = 4, use_mcmc = FALSE, use_eb = TRUE,
     if (NCOL(X) == 1) { m_wmu <- as.array(m_wmu) }
 
     # Compute prior for dispersion parameters from the data, empirical Bayes.
-    # TODO: For efficiency, should use the H matrix as fixed input for posterior
-    # inference. Current implementation creates this matrix per each iteration,
-    # which makes tha algorithm rather slow.
     H <- create_design_matrix(L = L, X = bb_mle_fit$mu, c = rbf_c)
     m_wgamma <- .lm_mle_penalized(y = stats::qlogis(bb_mle_fit$gamma),
                                   H = H, lambda = lambda)
@@ -260,7 +257,6 @@ scmet <- function(Y, X = NULL, L = 4, use_mcmc = FALSE, use_eb = TRUE,
   cat(date(), ": Posterior inference finished.\n")
 
   ## Round simulated object to reduce memory storage
-  # TODO: Add additional parameter to whether to this.
   tmp <- rstan::extract(posterior)
   posterior <- list(
     mu = round(tmp$mu, 3),

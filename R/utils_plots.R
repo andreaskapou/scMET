@@ -1,16 +1,19 @@
 # Define ggplot2 theme for scatter plots
 .scatter_theme <- function(legend_pos = "top") {
   p <- ggplot2::theme(
-    plot.title = ggplot2::element_text(hjust = 0.5, size = rel(1.1),
-                              margin = ggplot2::margin(0,0,2,0), color = "black"),
+    plot.title = ggplot2::element_text(
+      hjust = 0.5, size = ggplot2::rel(1.1),
+      margin = ggplot2::margin(0,0,2,0), color = "black"),
     legend.position = legend_pos,
     legend.title = ggplot2::element_blank(),
     axis.line = ggplot2::element_line(),
     #panel.border = element_blank(),
     #panel.grid.major = element_line(colour = "gainsboro"),
     panel.background = ggplot2::element_blank(),
-    axis.text = ggplot2::element_text(color = "black", size = rel(0.8)),
-    axis.title = ggplot2::element_text(color = "black", size = rel(1.2))
+    axis.text = ggplot2::element_text(color = "black",
+                                      size = ggplot2::rel(0.8)),
+    axis.title = ggplot2::element_text(color = "black",
+                                       size = ggplot2::rel(1.2))
   )
   return(p)
 }
@@ -60,52 +63,43 @@
 #' obj <- scmet_hvf(scmet_obj = obj, delta_e = 0.7)
 #' scmet_plot_vf_tail_prob(obj = obj, task = "hvf")
 #'
-#' @import ggplot2
-#'
 #' @export
 scmet_plot_efdr_efnr_grid <- function(obj, task = "hvf") {
-  if (!(methods::is(obj, "scmet_mcmc") ||
-        methods::is(obj, "scmet_vb") ||
-        methods::is(obj, "scmet_differential")) ) {
+  if (!inherits(obj, c("scmet_mcmc", "scmet_vb", "scmet_differential"))) {
     stop("Object is not generated from scMET.")
   }
-  # Object for HVF/LVF analysis
-  if (methods::is(obj, "scmet_mcmc") || methods::is(obj, "scmet_vb")) {
-    if (!(tolower(task) %in% c("hvf", "lvf"))) {
-      stop("Task can be either 'hvf' or 'lvf'.\n")
-    }
-    evi_thresh_grid <- obj[[task]]$evidence_thresh_grid
-    efdr_grid <- obj[[task]]$efdr_grid
-    efnr_grid <- obj[[task]]$efnr_grid
-    target_efdr <- obj[[task]]$target_efdr
-    evi_thresh <- obj[[task]]$evidence_thresh
-    title <- toupper(task)
-  } else {
-    if (task == "diff_mu") {
-      mode <- "diff_mu_thresh"
-      title <- "Differential mean"
-    } else if (task == "diff_epsilon") {
-      mode <- "diff_epsilon_thresh"
-      title <- "Differential residual overdispersion"
-    } else if (task == "diff_gamma") {
-      mode <- "diff_gamma_thresh"
-      title <- "Differential overdispersion"
-    } else {
-      stop("Task can be one of 'diff_mu', 'diff_epsilon' or 'diff_gamma'.\n")
-    }
-    evi_thresh_grid <- obj[[mode]]$evidence_thresh_grid
-    efdr_grid <- obj[[mode]]$efdr_grid
-    efnr_grid <- obj[[mode]]$efnr_grid
-    target_efdr <- obj[[mode]]$target_efdr
-    evi_thresh <- obj[[mode]]$evidence_thresh
+  if (!(task %in% c("hvf", "lvf", "diff_mu", "diff_epsilon", "diff_gamma"))) {
+    stop("Unrecognised analysis task!")
   }
-  gg <- ggplot() +
-    geom_line(aes(evi_thresh_grid, efdr_grid, color = "EFDR")) +
-    geom_line(aes(evi_thresh_grid, efnr_grid, color = "EFNR")) +
-    geom_hline(aes(color = "Target EFDR", yintercept = target_efdr)) +
-    geom_vline(aes(color = "Threshold", xintercept = evi_thresh)) +
-    labs(x = "Posterior evidence threshold", y = "Error rate", title = title) +
-    ylim(c(0,1)) + theme_bw() +
+  if (task %in% c("hvf", "lvf")) {
+    mode <- task
+    title <- toupper(task)
+  }
+  else if (task == "diff_mu") {
+    mode <- "diff_mu_thresh"
+    title <- "Differential mean"
+  } else if (task == "diff_epsilon") {
+    mode <- "diff_epsilon_thresh"
+    title <- "Differential residual overdispersion"
+  } else if (task == "diff_gamma") {
+    mode <- "diff_gamma_thresh"
+    title <- "Differential overdispersion"
+  } else {
+    stop("Task can be one of 'diff_mu', 'diff_epsilon' or 'diff_gamma'.\n")
+  }
+  evi_thresh_grid <- obj[[mode]]$evidence_thresh_grid
+  efdr_grid <- obj[[mode]]$efdr_grid
+  efnr_grid <- obj[[mode]]$efnr_grid
+  target_efdr <- obj[[mode]]$target_efdr
+  evi_thresh <- obj[[mode]]$evidence_thresh
+
+  gg <- ggplot2::ggplot() +
+    ggplot2::geom_line(ggplot2::aes(evi_thresh_grid, efdr_grid, color = "EFDR")) +
+    ggplot2::geom_line(ggplot2::aes(evi_thresh_grid, efnr_grid, color = "EFNR")) +
+    ggplot2::geom_hline(ggplot2::aes(color = "Target EFDR", yintercept = target_efdr)) +
+    ggplot2::geom_vline(ggplot2::aes(color = "Threshold", xintercept = evi_thresh)) +
+    ggplot2::labs(x = "Posterior evidence threshold", y = "Error rate", title = title) +
+    ggplot2::ylim(c(0,1)) + ggplot2::theme_bw() +
     .scatter_theme(legend_pos = "right")
   return(gg)
 }
@@ -147,8 +141,7 @@ scmet_plot_efdr_efnr_grid <- function(obj, task = "hvf") {
 #'
 scmet_plot_vf_tail_prob <- function(obj, x = "mu", task = "hvf", title = NULL,
                                     nfeatures = NULL){
-  if (!(methods::is(obj, "scmet_mcmc") ||
-        methods::is(obj, "scmet_vb")) ) {
+  if (!inherits(obj, c("scmet_mcmc", "scmet_vb"))) {
     stop("Object is not generated from scMET.")
   }
   is_variable <- NULL
@@ -189,17 +182,17 @@ scmet_plot_vf_tail_prob <- function(obj, x = "mu", task = "hvf", title = NULL,
     }
   }
 
-  gg <- ggplot(df,aes_string(x = x, y = "tail_prob")) +
-    geom_point(aes(fill = ifelse(is_variable, up_task, "Other"),
+  gg <- ggplot2::ggplot(df, ggplot2::aes_string(x = x, y = "tail_prob")) +
+    ggplot2::geom_point(ggplot2::aes(fill = ifelse(is_variable, up_task, "Other"),
                    size = ifelse(is_variable, up_task, "Other"),
                    alpha = ifelse(is_variable, up_task, "Other")),
                colour = "black", shape = 21, stroke = 0.03) +
-    scale_fill_manual(values = fill) +
-    scale_size_manual(values = size) +
-    scale_alpha_manual(values = alpha) +
-    geom_hline(yintercept = obj[[tolower(task)]]$evidence_thresh[1], lty = 2,
+    ggplot2::scale_fill_manual(values = fill) +
+    ggplot2::scale_size_manual(values = size) +
+    ggplot2::scale_alpha_manual(values = alpha) +
+    ggplot2::geom_hline(yintercept = obj[[tolower(task)]]$evidence_thresh[1], lty = 2,
                col = "black") +
-    labs(x = xlab, y = ylab, title = title) + theme_classic() +
+    ggplot2::labs(x = xlab, y = ylab, title = title) + ggplot2::theme_classic() +
     .scatter_theme(legend_pos = "right")
   return(gg)
 }
@@ -247,8 +240,7 @@ scmet_plot_vf_tail_prob <- function(obj, x = "mu", task = "hvf", title = NULL,
 #'
 scmet_plot_mean_var <- function(obj, y = "gamma", task = NULL, show_fit = TRUE,
                                 title = NULL, nfeatures = NULL, n = 80) {
-  if (!(methods::is(obj, "scmet_mcmc") ||
-        methods::is(obj, "scmet_vb")) ) {
+  if (!inherits(obj, c("scmet_mcmc", "scmet_vb"))) {
     stop("Object is not generated from scMET.")
   }
   xlab <- expression(paste("Mean DNA methylation ", mu))
@@ -265,12 +257,11 @@ scmet_plot_mean_var <- function(obj, y = "gamma", task = NULL, show_fit = TRUE,
   # Just plot mean-variability relationship, no HVF/LVF analysis
   if (is.null(task)) {
     # Obtain posterior median parameter estimates
-    df <- data.table(mu = matrixStats::colMedians(obj$posterior$mu),
+    df <- data.table::data.table(mu = matrixStats::colMedians(obj$posterior$mu),
                      epsilon = matrixStats::colMedians(obj$posterior$epsilon),
                      gamma = matrixStats::colMedians(obj$posterior$gamma))
-    df <- df %>%
-      .[, density_gamma := .get_density(mu, gamma, n = n)] %>%
-      .[, density_epsilon := .get_density(mu, epsilon, n = n)]
+    df[, density_gamma := .get_density(mu, gamma, n = n)]
+    df[, density_epsilon := .get_density(mu, epsilon, n = n)]
     col_grad <- ifelse(y == "gamma", "density_gamma", "density_epsilon")
 
     # Subset number of features
@@ -281,11 +272,11 @@ scmet_plot_mean_var <- function(obj, y = "gamma", task = NULL, show_fit = TRUE,
       }
     }
 
-    gg <- ggplot(df, aes_string(x = "mu", y = y, color = col_grad)) +
-      geom_point(size = 1) +
+    gg <- ggplot2::ggplot(df, ggplot2::aes_string(x = "mu", y = y, color = col_grad)) +
+      ggplot2::geom_point(size = 1) +
       viridis::scale_fill_viridis() +
-      viridis::scale_color_viridis() + theme_classic() +
-      labs(x = xlab, y = ylab, title = title) +
+      viridis::scale_color_viridis() + ggplot2::theme_classic() +
+      ggplot2::labs(x = xlab, y = ylab, title = title) +
       .scatter_theme(legend_pos = "none")
 
     # Show RBF fit
@@ -295,11 +286,12 @@ scmet_plot_mean_var <- function(obj, y = "gamma", task = NULL, show_fit = TRUE,
       ys <- stats::plogis(c(hs %*% matrixStats::colMedians(obj$posterior$w_gamma)))
       if (y == "epsilon") {
         gg <- gg +
-          geom_hline(yintercept = 0, linetype = "dashed", color = "gray20",
+          ggplot2::geom_hline(yintercept = 0, linetype = "dashed", color = "gray20",
                      size = 1.25)
       } else {
         gg <- gg +
-          geom_line(data = data.frame(xs = xs, ys = ys), aes(x = xs, y = ys),
+          ggplot2::geom_line(data = data.frame(xs = xs, ys = ys),
+                             ggplot2::aes(x = xs, y = ys),
                     color = "gray20", size = 1.35, alpha = 1)
       }
     }
@@ -332,15 +324,16 @@ scmet_plot_mean_var <- function(obj, y = "gamma", task = NULL, show_fit = TRUE,
       }
     }
 
-    gg <- ggplot(df, aes_string(x = "mu", y = y)) +
-      geom_point(aes(fill = ifelse(is_variable, task, "Other"),
+    gg <- ggplot2::ggplot(df, ggplot2::aes_string(x = "mu", y = y)) +
+      ggplot2::geom_point(ggplot2::aes(fill = ifelse(is_variable, task, "Other"),
                      size = ifelse(is_variable, task, "Other"),
                      alpha = ifelse(is_variable, task, "Other")),
                  colour = "black", shape = 21, stroke = 0.03) +
-      scale_fill_manual(values = fill) +
-      scale_size_manual(values = size) +
-      scale_alpha_manual(values = alpha) +
-      labs(x = xlab, y = ylab, title = title) + theme_classic() +
+      ggplot2::scale_fill_manual(values = fill) +
+      ggplot2::scale_size_manual(values = size) +
+      ggplot2::scale_alpha_manual(values = alpha) +
+      ggplot2::labs(x = xlab, y = ylab, title = title) +
+      ggplot2::theme_classic() +
       .scatter_theme(legend_pos = "right")
   }
   return(gg)
@@ -400,8 +393,7 @@ scmet_plot_estimated_vs_true <- function(obj, sim_dt, param = "mu",
                                          mle_fit = NULL, diff_feat_idx = NULL,
                                          hpd_thresh = 0.8, title = NULL,
                                          nfeatures = NULL) {
-  if (!(methods::is(obj, "scmet_mcmc") ||
-        methods::is(obj, "scmet_vb")) ) {
+  if (!inherits(obj, c("scmet_mcmc", "scmet_vb"))) {
     stop("Object is not generated from scMET.")
   }
   if (!(tolower(param) %in% c("mu", "gamma"))) {
@@ -440,19 +432,19 @@ scmet_plot_estimated_vs_true <- function(obj, sim_dt, param = "mu",
       }
     }
     colors <- c("BB MLE" = "#999999", "scMET" = "#E69F00")
-    gg <-  ggplot(res) +
-      geom_point(aes(y = bbmle, x = true, fill = "BB MLE"), shape = 21,
+    gg <-  ggplot2::ggplot(res) +
+      ggplot2::geom_point(ggplot2::aes(y = bbmle, x = true, fill = "BB MLE"), shape = 21,
                  size = 1.7, alpha = 0.7, stroke = 0.2) +
-      geom_point(aes(y = scmet, x = true, fill = "scMET"), shape = 21,
+      ggplot2::geom_point(ggplot2::aes(y = scmet, x = true, fill = "scMET"), shape = 21,
                  size = 2.2, stroke = 0.2) +
-      geom_abline(intercept = 0, slope = 1, color = "black",
+      ggplot2::geom_abline(intercept = 0, slope = 1, color = "black",
                   linetype = "dashed", alpha = 0.7) +
-      geom_segment(aes(x = true, y = bbmle, xend = true, yend = scmet),
-                   arrow = arrow(angle = 10, length = unit(0.06, "inches")),
+      ggplot2::geom_segment(ggplot2::aes(x = true, y = bbmle, xend = true, yend = scmet),
+                   arrow = ggplot2::arrow(angle = 10, length = ggplot2::unit(0.06, "inches")),
                    size = 0.14, alpha = 0.5) +
-      labs(x = paste("True", suffix), y = paste("Estimated", suffix),
+      ggplot2::labs(x = paste("True", suffix), y = paste("Estimated", suffix),
            color = "Legend") +
-      scale_fill_manual(values = colors) + theme_classic() +
+      ggplot2::scale_fill_manual(values = colors) + ggplot2::theme_classic() +
       .scatter_theme(legend_pos = "right")
   } else {
     # Colour differential features
@@ -468,23 +460,23 @@ scmet_plot_estimated_vs_true <- function(obj, sim_dt, param = "mu",
       }
     }
     # Create plot
-    gg <- ggplot(res, aes(x = true, y = scmet)) +
-      geom_errorbar(aes(ymin = hpdlow, ymax = hpdhigh),
-                    width = .003, position = position_dodge(0.05), size = 0.25) +
-      xlab(paste("True", suffix)) + ylab(paste("Estimated", suffix)) +
-      ggtitle(title)
+    gg <- ggplot2::ggplot(res, ggplot2::aes(x = true, y = scmet)) +
+      ggplot2::geom_errorbar(ggplot2::aes(ymin = hpdlow, ymax = hpdhigh),
+                    width = .003, position = ggplot2::position_dodge(0.05), size = 0.25) +
+      ggplot2::xlab(paste("True", suffix)) + ggplot2::ylab(paste("Estimated", suffix)) +
+      ggplot2::ggtitle(title)
 
     if (!is.null(diff_feat_idx)) {
       gg <- gg +
-        geom_point(aes(color = diff), size = 1) +
-        scale_color_manual(values = c('#595959', 'red'))
+        ggplot2::geom_point(ggplot2::aes(color = diff), size = 1) +
+        ggplot2::scale_color_manual(values = c('#595959', 'red'))
     } else {
-      gg <- gg + geom_point(size = 1)
+      gg <- gg + ggplot2::geom_point(size = 1)
     }
     # Add theme
     gg <- gg +
-      geom_abline(intercept = 0, slope = 1, color = "orange", linetype = "dashed") +
-      theme_classic() + .scatter_theme(legend_pos = "none")
+      ggplot2::geom_abline(intercept = 0, slope = 1, color = "orange", linetype = "dashed") +
+      ggplot2::theme_classic() + .scatter_theme(legend_pos = "none")
   }
   return(gg)
 }
@@ -538,7 +530,7 @@ scmet_plot_estimated_vs_true <- function(obj, sim_dt, param = "mu",
 scmet_plot_volcano <- function(diff_obj, task = "diff_epsilon", xlab = NULL,
                                ylab = "Posterior tail probability",
                                title = NULL, nfeatures = NULL) {
-  if (!(methods::is(diff_obj, "scmet_differential") )) {
+  if (!(inherits(diff_obj, "scmet_differential") )) {
     stop("Object is not generated from scMET differential function.")
   }
   task <- tolower(task)
@@ -604,18 +596,18 @@ scmet_plot_volcano <- function(diff_obj, task = "diff_epsilon", xlab = NULL,
   }
 
   # Create ggplot
-  gg <- ggplot(data = sum_obj, aes_string(x = x, y = y)) +
-    geom_point(aes_string(fill = test, size = test, alpha = test),
+  gg <- ggplot2::ggplot(data = sum_obj, ggplot2::aes_string(x = x, y = y)) +
+    ggplot2::geom_point(ggplot2::aes_string(fill = test, size = test, alpha = test),
                shape = 21, stroke = 0.02) +
-    scale_size_manual(name = "Hits", values = size) +
-    scale_alpha_manual(name = "Hits", values = alpha) +
-    scale_fill_manual(name = "Hits",
+    ggplot2::scale_size_manual(name = "Hits", values = size) +
+    ggplot2::scale_alpha_manual(name = "Hits", values = alpha) +
+    ggplot2::scale_fill_manual(name = "Hits",
                       values = c("lightpink3", "darkolivegreen3", "#595959")) +
-    geom_vline(xintercept = c(-psi, psi), color = "dodgerblue4",
+    ggplot2::geom_vline(xintercept = c(-psi, psi), color = "dodgerblue4",
                linetype = "dashed", alpha = 0.8) +
-    geom_hline(yintercept = thresh_obj$evidence_thresh, color = "orange",
+    ggplot2::geom_hline(yintercept = thresh_obj$evidence_thresh, color = "orange",
                linetype = "dashed", alpha = 0.8) +
-    labs(x = xlab, y = ylab, title = title) + theme_classic() +
+    ggplot2::labs(x = xlab, y = ylab, title = title) + ggplot2::theme_classic() +
     .scatter_theme(legend_pos = "right")
   return(gg)
 }
@@ -672,7 +664,7 @@ scmet_plot_volcano <- function(diff_obj, task = "diff_epsilon", xlab = NULL,
 scmet_plot_ma <- function(diff_obj, task = "diff_epsilon", x = "mu",
                           xlab = NULL, ylab = NULL, title = NULL,
                           nfeatures = NULL) {
-  if (!(methods::is(diff_obj, "scmet_differential") )) {
+  if (!(inherits(diff_obj, "scmet_differential") )) {
     stop("Object is not generated from scMET differential function.")
   }
   task <- tolower(task)
@@ -763,16 +755,16 @@ scmet_plot_ma <- function(diff_obj, task = "diff_epsilon", x = "mu",
   }
 
   # Create ggplot
-  gg <- ggplot(data = sum_obj, aes_string(x = x_param, y = y)) +
-    geom_point(aes_string(fill = test, size = test, alpha = test),
+  gg <- ggplot2::ggplot(data = sum_obj, ggplot2::aes_string(x = x_param, y = y)) +
+    ggplot2::geom_point(ggplot2::aes_string(fill = test, size = test, alpha = test),
                shape = 21, stroke = 0.02) +
-    scale_size_manual(name = "Hits", values = size) +
-    scale_alpha_manual(name = "Hits", values = alpha) +
-    scale_fill_manual(name = "Hits",
+    ggplot2::scale_size_manual(name = "Hits", values = size) +
+    ggplot2::scale_alpha_manual(name = "Hits", values = alpha) +
+    ggplot2::scale_fill_manual(name = "Hits",
                       values = c("lightpink3", "darkolivegreen3", "#595959")) +
-    geom_hline(yintercept = c(-psi, psi), color = "dodgerblue4",
+    ggplot2::geom_hline(yintercept = c(-psi, psi), color = "dodgerblue4",
                linetype = "dashed", alpha = 0.8) +
-    labs(x = xlab, y = ylab, title = title) + theme_classic() +
+    ggplot2::labs(x = xlab, y = ylab, title = title) + ggplot2::theme_classic() +
     .scatter_theme(legend_pos = "right")
   return(gg)
 }

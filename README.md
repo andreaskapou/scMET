@@ -14,10 +14,20 @@ Overview of the `scMET` model is shown below:
 
 ## Installation
 ```R
-# install.packages("devtools")
-devtools::install_github("andreaskapou/scMET")
+# Install stable version from Bioconductor
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("scMET")
+
+## Or development version from Github
+# install.packages("remotes")
+remotes::install_github("andreaskapou/scMET")
 ```
-### Installation issue requiring the V8 library
+
+### Installation issue requiring the V8 library (outdated)
+__This is an old issue with Rstan, keeping here for reference__.
+
 The scMET package depends heavily on `Rstan`, whose newer version depends on the V8 library (see this issue: [https://github.com/stan-dev/rstan/issues/831](https://github.com/stan-dev/rstan/issues/831)). For users that don't have the system-level V8 dependency pre-installed, there are two approaches.
 
 1. (Recommended) Download a static libv8 library when installing on Linux:

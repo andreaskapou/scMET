@@ -43,7 +43,7 @@ the BIC.)} \item{\code{BIC_bin|}: The Bayes Information Criterion for binomial m
 \description{
 Maximum Likelihood Estimate (MLE) of Beta-Binomial (BB) model.
 Some details about this model can be found on the following tutorial
-https://rpubs.com/cakapourani/beta-binomial
+\url{https://rpubs.com/cakapourani/beta-binomial}
 }
 \examples{
 # Extract data from a single Feature
