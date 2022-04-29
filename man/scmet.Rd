@@ -123,7 +123,7 @@ MCMC implementation of scMET since it is more stable.
 }
 \examples{
 # Fit scMET (in practice 'iter' should be much larger)
-obj <- scmet(Y = scmet_dt$Y, X = scmet_dt$X, L = 4, iter = 500)
+obj <- scmet(Y = scmet_dt$Y, X = scmet_dt$X, L = 4, iter = 300)
 
 }
 \seealso{

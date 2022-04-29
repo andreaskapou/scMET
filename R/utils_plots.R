@@ -59,7 +59,7 @@
 #'
 #' @examples
 #' # Fit scMET
-#' obj <- scmet(Y = scmet_dt$Y, X = scmet_dt$X, L = 4, iter = 200)
+#' obj <- scmet(Y = scmet_dt$Y, X = scmet_dt$X, L = 4, iter = 100)
 #' obj <- scmet_hvf(scmet_obj = obj, delta_e = 0.7)
 #' scmet_plot_vf_tail_prob(obj = obj, task = "hvf")
 #'
@@ -133,7 +133,7 @@ scmet_plot_efdr_efnr_grid <- function(obj, task = "hvf") {
 #'
 #' @examples
 #' # Fit scMET
-#' obj <- scmet(Y = scmet_dt$Y, X = scmet_dt$X, L = 4, iter = 200)
+#' obj <- scmet(Y = scmet_dt$Y, X = scmet_dt$X, L = 4, iter = 100)
 #' obj <- scmet_hvf(scmet_obj = obj, delta_e = 0.7)
 #' scmet_plot_vf_tail_prob(obj = obj, x = "mu")
 #'
@@ -233,7 +233,7 @@ scmet_plot_vf_tail_prob <- function(obj, x = "mu", task = "hvf", title = NULL,
 #'
 #' @examples
 #' # Fit scMET
-#' obj <- scmet(Y = scmet_dt$Y, X = scmet_dt$X, L = 4, iter = 200)
+#' obj <- scmet(Y = scmet_dt$Y, X = scmet_dt$X, L = 4, iter = 100)
 #' scmet_plot_mean_var(obj = obj, y = "gamma")
 #'
 #' @export
@@ -378,7 +378,7 @@ scmet_plot_mean_var <- function(obj, y = "gamma", task = NULL, show_fit = TRUE,
 #'
 #' @examples
 #' # Fit scMET
-#' obj <- scmet(Y = scmet_dt$Y, X = scmet_dt$X, L = 4, iter = 200)
+#' obj <- scmet(Y = scmet_dt$Y, X = scmet_dt$X, L = 4, iter = 100)
 #' scmet_plot_estimated_vs_true(obj = obj, sim_dt = scmet_dt, param = "mu")
 #'
 #' # BB MLE fit to compare with scMET
@@ -516,9 +516,9 @@ scmet_plot_estimated_vs_true <- function(obj, sim_dt, param = "mu",
 #' @examples
 #' # Fit scMET for each group
 #' fit_A <- scmet(Y = scmet_diff_dt$scmet_dt_A$Y,
-#' X = scmet_diff_dt$scmet_dt_A$X, L = 4, iter = 200, seed = 12)
+#' X = scmet_diff_dt$scmet_dt_A$X, L = 4, iter = 100, seed = 12)
 #' fit_B <- scmet(Y = scmet_diff_dt$scmet_dt_B$Y,
-#' X = scmet_diff_dt$scmet_dt_B$X, L = 4, iter = 200, seed = 12)
+#' X = scmet_diff_dt$scmet_dt_B$X, L = 4, iter = 100, seed = 12)
 #'
 #' # Run differential test
 #' diff_obj <- scmet_differential(obj_A = fit_A, obj_B = fit_B)
@@ -650,9 +650,9 @@ scmet_plot_volcano <- function(diff_obj, task = "diff_epsilon", xlab = NULL,
 #' @examples
 #' # Fit scMET for each group
 #' fit_A <- scmet(Y = scmet_diff_dt$scmet_dt_A$Y,
-#' X = scmet_diff_dt$scmet_dt_A$X, L = 4, iter = 200, seed = 12)
+#' X = scmet_diff_dt$scmet_dt_A$X, L = 4, iter = 100, seed = 12)
 #' fit_B <- scmet(Y = scmet_diff_dt$scmet_dt_B$Y,
-#' X = scmet_diff_dt$scmet_dt_B$X, L = 4, iter = 200, seed = 12)
+#' X = scmet_diff_dt$scmet_dt_B$X, L = 4, iter = 100, seed = 12)
 #'
 #' # Run differential test
 #' diff_obj <- scmet_differential(obj_A = fit_A, obj_B = fit_B)

@@ -126,7 +126,7 @@ __NOTE 2__ For relatively small datasets we recommend using the MCMC implementat
 ```{r run_scmet_synthetic, warning=FALSE, message=FALSE}
 # Run with seed for reproducibility
 fit_obj <- scmet(Y = scmet_dt$Y, X = scmet_dt$X, L = 4,
-                 iter = 1500, seed = 12)
+                 iter = 1000, seed = 12)
 ```
 
 
@@ -274,11 +274,11 @@ __NOTE 2__ For relatively small datasets we recommend using the MCMC implementat
 # Run scMET for group A
 fit_A <- scmet(Y = scmet_diff_dt$scmet_dt_A$Y,
                X = scmet_diff_dt$scmet_dt_A$X, L = 4, 
-               iter = 1000, seed = 12)
+               iter = 600, seed = 12)
 # Run scMET for group B
 fit_B <- scmet(Y = scmet_diff_dt$scmet_dt_B$Y,
                X = scmet_diff_dt$scmet_dt_B$X, L = 4, 
-               iter = 1000, seed = 12)
+               iter = 600, seed = 12)
 ```
 
 Showing mean - overdispersion plots for each group
