@@ -124,14 +124,16 @@ identify differentially methylted (DM) and differentially variable (DV)
 features across two groups of pre-specified cell populations.
 }
 \examples{
+\dontrun{
 # Fit scMET for each group
 fit_A <- scmet(Y = scmet_diff_dt$scmet_dt_A$Y,
-X = scmet_diff_dt$scmet_dt_A$X, L = 4, iter = 100, seed = 12)
+X = scmet_diff_dt$scmet_dt_A$X, L = 4, iter = 50, seed = 12)
 fit_B <- scmet(Y = scmet_diff_dt$scmet_dt_B$Y,
-X = scmet_diff_dt$scmet_dt_B$X, L = 4, iter = 100, seed = 12)
+X = scmet_diff_dt$scmet_dt_B$X, L = 4, iter = 50, seed = 12)
 
 # Run differential test
 diff_obj <- scmet_differential(obj_A = fit_A, obj_B = fit_B)
+}
 
 }
 \seealso{

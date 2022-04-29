@@ -44,6 +44,7 @@ x-axis. For differential variability (DV) analysis we recommend using the
 \code{epsilon} parameter.
 }
 \examples{
+\dontrun{
 # Fit scMET for each group
 fit_A <- scmet(Y = scmet_diff_dt$scmet_dt_A$Y,
 X = scmet_diff_dt$scmet_dt_A$X, L = 4, iter = 100, seed = 12)
@@ -54,6 +55,7 @@ X = scmet_diff_dt$scmet_dt_B$X, L = 4, iter = 100, seed = 12)
 diff_obj <- scmet_differential(obj_A = fit_A, obj_B = fit_B)
 # Create volcano plot
 scmet_plot_volcano(diff_obj, task = "diff_epsilon")
+}
 
 }
 \seealso{

@@ -48,6 +48,7 @@ shows difference between measurements across two groups and the x-axis
 shows the average measurements across the two groups.
 }
 \examples{
+\dontrun{
 # Fit scMET for each group
 fit_A <- scmet(Y = scmet_diff_dt$scmet_dt_A$Y,
 X = scmet_diff_dt$scmet_dt_A$X, L = 4, iter = 100, seed = 12)
@@ -58,6 +59,7 @@ X = scmet_diff_dt$scmet_dt_B$X, L = 4, iter = 100, seed = 12)
 diff_obj <- scmet_differential(obj_A = fit_A, obj_B = fit_B)
 # Create volcano plot
 scmet_plot_ma(diff_obj, task = "diff_epsilon")
+}
 
 }
 \seealso{

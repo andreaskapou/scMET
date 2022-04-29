@@ -514,6 +514,7 @@ scmet_plot_estimated_vs_true <- function(obj, sim_dt, param = "mu",
 #'   \code{\link{scmet_plot_efdr_efnr_grid}}, \code{\link{scmet_plot_ma}}
 #'
 #' @examples
+#' \dontrun{
 #' # Fit scMET for each group
 #' fit_A <- scmet(Y = scmet_diff_dt$scmet_dt_A$Y,
 #' X = scmet_diff_dt$scmet_dt_A$X, L = 4, iter = 100, seed = 12)
@@ -524,6 +525,7 @@ scmet_plot_estimated_vs_true <- function(obj, sim_dt, param = "mu",
 #' diff_obj <- scmet_differential(obj_A = fit_A, obj_B = fit_B)
 #' # Create volcano plot
 #' scmet_plot_volcano(diff_obj, task = "diff_epsilon")
+#' }
 #'
 #' @export
 #'
@@ -648,6 +650,7 @@ scmet_plot_volcano <- function(diff_obj, task = "diff_epsilon", xlab = NULL,
 #'   \code{\link{scmet_plot_efdr_efnr_grid}}, \code{\link{scmet_plot_volcano}}
 #'
 #' @examples
+#' \dontrun{
 #' # Fit scMET for each group
 #' fit_A <- scmet(Y = scmet_diff_dt$scmet_dt_A$Y,
 #' X = scmet_diff_dt$scmet_dt_A$X, L = 4, iter = 100, seed = 12)
@@ -658,6 +661,7 @@ scmet_plot_volcano <- function(diff_obj, task = "diff_epsilon", xlab = NULL,
 #' diff_obj <- scmet_differential(obj_A = fit_A, obj_B = fit_B)
 #' # Create volcano plot
 #' scmet_plot_ma(diff_obj, task = "diff_epsilon")
+#' }
 #'
 #' @export
 #'
