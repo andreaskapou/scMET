@@ -1,7 +1,7 @@
 Package: scMET
 Type: Package
 Title: Bayesian modelling of cell-to-cell DNA methylation heterogeneity
-Version: 0.99.9
+Version: 0.99.10
 Authors@R: 
     c(person(given = "Andreas C.",
            family = "Kapourani",
