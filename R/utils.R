@@ -30,34 +30,19 @@
 #'
 #' @export
 sce_to_scmet <- function(sce) {
-  Feature = Cell <- NULL
-  # Extract methylated and total reads
-  met <- SummarizedExperiment::assay(sce, "met") |>
-    base::as.matrix()
-  total <- SummarizedExperiment::assay(sce, "total") |>
-    base::as.matrix()
+  Feature = Cell = total_reads = met_reads <- NULL
+  # Extract total and met reads
+  met <- SummarizedExperiment::assay(sce, "met")
+  total <- SummarizedExperiment::assay(sce, "total")
+  # From idx to feature and cell names
+  feature_names <- factor(total@i + 1, levels = seq_len(NROW(total)),
+                          labels = rownames(total))
+  cell_names <- factor(total@j + 1, levels = seq_len(NCOL(total)),
+                       labels = colnames(total))
 
-  # Convert missing values to NAs
-  idx <- which(total == 0)
-  met[idx] <- NA
-  total[idx] <- NA
-
-  met <- data.table::data.table(Feature = rownames(sce), met)
-  total <- data.table::data.table(Feature = rownames(sce), total)
-
-  met <- data.table::melt(met, id.vars = "Feature",
-                          measure.vars = colnames(sce)) |>
-    stats::na.omit()
-  total <- data.table::melt(total, id.vars = "Feature",
-                            measure.vars = colnames(sce)) |>
-    stats::na.omit()
-
-  colnames(met) <- c("Feature", "Cell", "met_reads")
-  colnames(total) <- c("Feature", "Cell", "total_reads")
-
-  # Create final methylation data object Y
-  Y <- cbind(total, data.table::data.table(met_reads = met$met_reads))
-  Y <- Y[order(Feature, Cell), , drop = FALSE]
+  # convert to data frame: convert to 1-based indexing
+  Y <- data.table::data.table(Feature = feature_names, Cell = cell_names,
+                              total_reads = total@x, met_reads = met@x)
   # Extract covariates X
   X <- S4Vectors::metadata(SummarizedExperiment::rowData(sce))$X
   return(list(Y = Y, X = X))
@@ -93,28 +78,19 @@ sce_to_scmet <- function(sce) {
 scmet_to_sce <- function(Y, X = NULL) {
   # First we create a wide format for methylated cpgs
   met_Y <- Y[, c("Feature", "Cell", "met_reads")]
-  met_Y <- data.table::dcast(met_Y, Feature ~ Cell, value.var = "met_reads")
-  # NAs are set to 0
-  met_Y[is.na(met_Y)] <- 0
-
-  # Next we create a wide format for total cpgs
   tot_Y <- Y[, c("Feature", "Cell", "total_reads")]
-  tot_Y <- data.table::dcast(tot_Y, Feature ~ Cell, value.var = "total_reads")
-  tot_Y[is.na(tot_Y)] <- 0
 
+  i <- as.numeric(factor(tot_Y$Feature, levels = unique(tot_Y$Feature)))
+  j <- as.numeric(factor(tot_Y$Cell, levels = unique(tot_Y$Cell)))
+
+  met <- Matrix::sparseMatrix(i, j, x = met_Y$met_reads, repr = "T")
+  total <- Matrix::sparseMatrix(i, j, x = tot_Y$total_reads, repr = "T")
   # Extract cell and feature names
-  feature_names <- tot_Y$Feature
-  tot_Y <- tot_Y[, -c("Feature")]
-  met_Y <- met_Y[, -c("Feature")]
-  cell_names <- base::colnames(tot_Y)
+  feature_names <- unique(tot_Y$Feature)
+  cell_names <- unique(tot_Y$Cell)
 
-  # Create sparse matrix
-  total <- Matrix::Matrix(as.matrix(tot_Y), sparse = TRUE)
   base::rownames(total) <- feature_names
   base::colnames(total) <- cell_names
-
-  # Create sparse matrix
-  met <- Matrix::Matrix(as.matrix(met_Y), sparse = TRUE)
   base::rownames(met) <- feature_names
   base::colnames(met) <- cell_names
 
@@ -130,6 +106,7 @@ scmet_to_sce <- function(Y, X = NULL) {
   )
   return(sce)
 }
+
 
 
 #' @title Create design matrix

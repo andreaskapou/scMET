@@ -27,7 +27,12 @@
 #' @param use_eb Logical, whether to use 'Empirical Bayes' for parameter
 #'   initialization. If `TRUE` (default), it will intialise the `m_wmu` and
 #'   `m_wgamma` parameters below.
-#' @param iter Total number of iterations, either MCMC or VB algorithm.
+#' @param iter Total number of iterations, either MCMC or VB algorithm. NOTE:
+#' The STAN implementation of VB relies on black-box variational inference
+#' and potentially with relatively small sample sizes sometimes tends to
+#' 'search' around the local/global minima. We've seen that with larger sample
+#' sizes (thousands of cells), it tends to converge much faster, e.g. around
+#' 2-3k iterations.
 #' @param algorithm Stan algorithm to be used by Stan. If MCMC: Possible values
 #'   are: "NUTS", "HMC". If VB: Possible values are: "meanfield" and "fullrank".
 #' @param output_samples If VB algorithm, the number of posterior samples to
@@ -91,9 +96,9 @@ scmet <- function(Y, X = NULL, L = 4, use_mcmc = FALSE, use_eb = TRUE,
   #-------------------
   # Check that Y has 4 columns and ensure it is a data.table
   assertthat::assert_that(NCOL(Y) == 4)
-  if (!is.data.table(Y)) {
+  if (!data.table::is.data.table(Y)) {
     message("Converting Y matrix to data.table.\n")
-    Y <- as.data.table(Y)
+    Y <- data.table::as.data.table(Y)
     colnames(Y) <- c("Feature", "Cell", "total_reads", "met_reads")
   }
   if (chains < 1) { stop("You should have at least one chain.") }
@@ -127,12 +132,12 @@ scmet <- function(Y, X = NULL, L = 4, use_mcmc = FALSE, use_eb = TRUE,
   if (L == 1) { m_wgamma <- as.array(m_wgamma) }
 
   ## Order by Feature and cell id, so we can the segment function inside stan.
-  cat("Sorting features.\n")
+  message("Sorting features.\n")
   Y <- Y[order(Feature), , drop = FALSE]
   X <- as.matrix(X[order(rownames(X)), , drop = FALSE])
 
-  cat("Total # of cells: ", length(unique(Y$Cell)), ".\n")
-  cat("Total # of features: ", length(unique(Y$Feature)), ".\n")
+  message("Total # of cells: ", length(unique(Y$Cell)), ".\n")
+  message("Total # of features: ", length(unique(Y$Feature)), ".\n")
 
   # Total number of observed cells in each feature
   N_cells <- Y[, .N, by = c("Feature")]$N
@@ -143,7 +148,7 @@ scmet <- function(Y, X = NULL, L = 4, use_mcmc = FALSE, use_eb = TRUE,
   }
 
   if (use_eb) {
-    cat(date(), ": Using EB to set model priors.\n")
+    message(date(), ": Using EB to set model priors.\n")
 
     # For efficiency, we should subsample features, since we just want a broad prior.
     # Also, keep only those features for which we could compute the MLE?
@@ -187,7 +192,7 @@ scmet <- function(Y, X = NULL, L = 4, use_mcmc = FALSE, use_eb = TRUE,
 
     # If we also require to set initial values based on EB estimates
     if (init_using_eb) {
-      cat("Usin EB estimates as initial values for posterior inference.\n")
+      message("Usin EB estimates as initial values for posterior inference.\n")
       # Function form
       init_func <- function() {
         list(w_mu = m_wmu, w_gamma = m_wgamma,
@@ -197,7 +202,7 @@ scmet <- function(Y, X = NULL, L = 4, use_mcmc = FALSE, use_eb = TRUE,
       # generate a list of lists to specify initial values
       init_vals <- lapply(seq_len(chains), function(id) init_func())
     }
-    cat(date(), ": Finished EB.\n")
+    message(date(), ": Finished EB.\n")
   }
 
   # To pass RMD check
@@ -223,7 +228,7 @@ scmet <- function(Y, X = NULL, L = 4, use_mcmc = FALSE, use_eb = TRUE,
   })
 
   # Perform inference
-  cat(date(), ": Starting inference.\n")
+  message(date(), ": Starting inference.\n")
   #-----------------
   # Handle possible errors when Stan initialization fails during inference.
   # Maybe should write a better code for this, at some point
@@ -254,7 +259,7 @@ scmet <- function(Y, X = NULL, L = 4, use_mcmc = FALSE, use_eb = TRUE,
     stop("ERROR: Inference failed with these settings.
          Try running again or perfrom some filtering on the data...")
   }
-  cat(date(), ": Posterior inference finished.\n")
+  message(date(), ": Posterior inference finished.\n")
 
   ## Round simulated object to reduce memory storage
   tmp <- rstan::extract(posterior)

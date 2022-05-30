@@ -141,13 +141,13 @@ scmet_simulate_diff <- function(N_feat = 100, N_cells = 50, N_cpgs = 15, L = 4,
   w_gamma <- .init_w_gamma(w_gamma = w_gamma, L = L)
 
   # Generate data from group A
-  cat("Simulating from group A\n")
+  message("Simulating from group A\n")
   sim_dt_A <- scmet_simulate(N_feat = N_feat, N_cells = N_cells, N_cpgs = N_cpgs,
                              L = L, X = X, w_mu = w_mu, s_mu = s_mu,
                              w_gamma = w_gamma, s_gamma = s_gamma, rbf_c = rbf_c,
                              cells_range = cells_range, cpgs_range = cpgs_range)
 
-  cat("Simulating from group B\n")
+  message("Simulating from group B\n")
   # Generate total number of CpGs per feature and cell for group B
   cpgs_list_B <- .generate_cpgs(N_feat = N_feat, N_cells = N_cells, N_cpgs = N_cpgs,
                                 cells_range = cells_range, cpgs_range = cpgs_range)

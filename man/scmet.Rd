@@ -56,7 +56,12 @@ datasets, we recommend using MCMC implementation since it is more stable.}
 initialization. If \code{TRUE} (default), it will intialise the \code{m_wmu} and
 \code{m_wgamma} parameters below.}
 
-\item{iter}{Total number of iterations, either MCMC or VB algorithm.}
+\item{iter}{Total number of iterations, either MCMC or VB algorithm. NOTE:
+The STAN implementation of VB relies on black-box variational inference
+and potentially with relatively small sample sizes sometimes tends to
+'search' around the local/global minima. We've seen that with larger sample
+sizes (thousands of cells), it tends to converge much faster, e.g. around
+2-3k iterations.}
 
 \item{algorithm}{Stan algorithm to be used by Stan. If MCMC: Possible values
 are: "NUTS", "HMC". If VB: Possible values are: "meanfield" and "fullrank".}

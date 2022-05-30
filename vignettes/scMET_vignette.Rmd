@@ -359,11 +359,10 @@ In this section we show the ability to convert between scMET objects and `Single
 
 The structure of the SCE object to store scBS-seq data is as follows. We create two assays, `met` storing methylated CpGs and `total` storing total number of CpGs. Rows correspond to features and columns to cells, similar to scRNA-seq convention. To distinguish between a feature (in a cell) having zero methylated CpGs vs not having CpG coverage at all (missing value), we check if the corresponding entry in `total` is zero as well. Next `rownames` and `colnames` should store the feature and cell names, respectively. Covariates `X` that might explain variability in mean (methylation) should be stored in `metadata(rowData(sce))$X`.
 
-Below we show an example of converting between these formats. First we create a copy of the synthetic data and sort also by the `Cell` column.
+Below we show an example of converting between these formats.
 
 ```{r}
 Y_scmet <- scmet_dt$Y # Methylation data
-Y_scmet <- Y_scmet[order(Feature, Cell), , drop = FALSE]
 X <- scmet_dt$X # Covariates
 head(Y_scmet)
 ```
