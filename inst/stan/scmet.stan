@@ -65,9 +65,9 @@ data {
 	int<lower=0> J;         // # of features
 	int<lower=0> N_X;       // # of covariates for mean parameter
 	int<lower=0> L;         // Number of basis functions (including intercept term)
-	int<lower=0> n[N];      // total number of trials (long form)
-	int<lower=0> y[N];      // number of successes (long form)
-	int<lower=0> C[J];      // # of cells with obserations in each feature
+	array[N] int<lower=0> n;      // total number of trials (long form)
+	array[N] int<lower=0> y;      // number of successes (long form)
+	array[J] int<lower=0> C;      // # of cells with obserations in each feature
 	real<lower=0> rbf_c;    // Scaling parameter for spatial variance of RBFs.
 	matrix[J, N_X] X;       // Covariates for each feature J
 	vector[N_X] m_wmu;      // Normal mean vector prior on w_\mu
